@@ -1,5 +1,13 @@
 #!/bin/bash
-trap 'pgrep netsniff-ng | xargs kill -s INT; exit' INT 
+
+function myexit(){
+  echo "====stop all netsniff-ng"
+  pgrep netsniff-ng | xargs kill -s INT
+  echo "====Exit normal!" >> ~/test.log
+}
+# 1:HUP 2:INT 3:QUIT 15:TERM
+trap "" HUP
+trap "myexit;exit 0" INT TERM QUIT
 
 defaultnics="p2p1 p2p2" # 默认抓包网卡
 defaultdir="/backup/" # 默认转包文件存放目录
@@ -13,7 +21,7 @@ Usage:\n
   -o: output directory
 Example:\n
   ./capture.sh -d 600 -n p2p1,p2p2\n
-  ./capture.sh 600 # 默认网卡抓包600秒
+  ./capture.sh 60*10 # 默认网卡抓包600秒
 "
 
 # 读取参数
@@ -22,7 +30,8 @@ do
   case $OPT in
     d)
       echo "====duration_time's arg: $OPTARG"
-      dt=$OPTARG
+      let dt=$OPTARG
+      #echo "====duration_time's arg: $dt"
       ;;
     s)
       echo "====start_time's arg: $OPTARG"
@@ -60,8 +69,6 @@ else
   echo "====nics:$nics, starttime:$starttime, endtime:$endtime, output_dir:$out_dir"
 fi
 
-#exit
-
 :<<COMMENT
 out_dir="/home/"
 period=$1
@@ -69,11 +76,6 @@ starttime=`date +%s`
 endtime=$(( $starttime + $period))
 echo "====starttime: $starttime, endtime: $endtime, period: $period(s)"
 COMMENT
-
-function stopall(){
-  echo "====stopall"
-  pgrep netsniff-ng | xargs kill -s INT 
-}
 
 function startprocess(){
   fn_time=`date +%Y%m%d_%H%M%S`
@@ -113,8 +115,7 @@ do
   currenttime=`date +%s`
   #echo "====endtime:$endtime; currenttime:$currenttime"
   if [ $endtime -le $currenttime ];then
-    stopall
-    exit
+    myexit
   else
     checkall
   fi
