@@ -4,12 +4,12 @@
 trap '' HUP
 trap 'myexit' INT QUIT TERM
 
-defaultnics="em1 em2"                          # 默认抓包网卡
-defaultlogname="capture.log"                  # 默认日志文件
-defaultdir="/backup/"                          # 默认抓包文件存放目录
-defaulttmp="/backup/tmp/"                   # 默认临时目录
-defaultlog="/backup/log/"           # 默认日志目录
-defaultpcaptime=86400                          # 默认抓包24*60*60 秒
+defaultnics="em1 em2"                 # 默认抓包网卡
+defaultlogname="capture.log"          # 默认日志文件
+defaultdir="/backup/"                 # 默认抓包文件存放目录
+defaulttmp="/backup/tmp/"             # 默认临时目录
+defaultlog="/backup/log/"             # 默认日志目录
+defaultpcaptime=86400                 # 默认抓包24*60*60 秒
 
 if [ ! -d ${defaultdir} ]; then mkdir ${defaultdir}; fi
 if [ ! -d ${defaulttmp} ]; then mkdir ${defaulttmp}; fi
