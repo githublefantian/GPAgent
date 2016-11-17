@@ -118,7 +118,7 @@ function myexit(){
   pgrep netsniff-ng | xargs kill -s INT 2> /dev/null
   currenttime=`date`
   timestamp=`date +%s`
-  echo "Exit normal!"
+  echo "PID: $$, Exit normal!"
   echo -e "====[script stop time]:${currenttime} (${timestamp})===="
   exit
 }
