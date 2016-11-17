@@ -4,28 +4,29 @@
 trap '' HUP
 trap 'myexit' INT QUIT TERM
 
-defaultnics="em1 em2"                 # 默认抓包网卡
+defaultnics="p2p1 p2p2 p2p3"          # 默认抓包网卡
 defaultlogname="capture.log"          # 默认日志文件
 defaultdir="/backup/"                 # 默认抓包文件存放目录
 defaulttmp="/backup/tmp/"             # 默认临时目录
 defaultlog="/backup/log/"             # 默认日志目录
-defaultpcaptime=86400                 # 默认抓包24*60*60 秒
+defaultpcaptime=86400                 # 默认抓包24小时，24*60*60 秒
 
 if [ ! -d ${defaultdir} ]; then mkdir ${defaultdir}; fi
 if [ ! -d ${defaulttmp} ]; then mkdir ${defaulttmp}; fi
 if [ ! -d ${defaultlog} ]; then mkdir ${defaultlog}; fi
 
 usage="
-Usage:\n
-  -d: duration_time(seconds)\n
-  -s: start_time(timestamp or 12:00:30 format)\n
-  -e: end_time(timestamp)\n
-  -n: nic devices\n
-  -o: output directory
-Example:\n
-  ./capture.sh -d 600 -n p2p1,p2p2\n
-  ./capture.sh 60*10 # 默认网卡抓包600秒
-  ./capture.sh # 手动关闭
+\tUsage:\n
+\t-d: duration_time(seconds)\n
+\t-s: start_time(timestamp or 12:00:30 format)\n
+\t-e: end_time(timestamp)\n
+\t-n: nic devices\n
+\t-o: output directory\n
+\tExample:\n
+\t./capture.sh 60*10  # 在默认网卡上抓包600秒\n
+\t./capture.sh  # 手动关闭\n
+\t./capture.sh -d 600 -n p2p1,p2p2 -o \\home\\test  # 抓包10分钟 \n
+\t./capture.sh -s 12:00:00 -d 600 -o \\home\\test # 12点启动抓包程序，抓包10分钟后自动停止\n
 "
 
 # 读取参数
@@ -54,7 +55,8 @@ do
       od=${OPTARG}
       ;;
     ?)
-      echo ${usage}
+      echo -e ${usage}
+      exit
       ;;
   esac
 done
