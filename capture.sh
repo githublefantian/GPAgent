@@ -97,6 +97,7 @@ currenttime=`date`
 timestamp=`date +%s`
 echo -e "\n====[script start time]:${currenttime} (${timestamp})===="
 echo "PID: $$"
+echo "COMMAND: $0 $*"
 echo "nics:${nics}, starttime:${starttime}, endtime:${endtime}, periodtime:${period,} output_dir:${out_dir}"
 
 
