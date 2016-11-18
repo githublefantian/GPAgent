@@ -16,25 +16,25 @@ if [ ! -d ${defaulttmp} ]; then mkdir ${defaulttmp}; fi
 if [ ! -d ${defaultlog} ]; then mkdir ${defaultlog}; fi
 
 usage="
-\tUsage:\n
-\t-d: duration_time(seconds)\n
-\t-s: start_time(timestamp or 12:00:30 format)\n
-\t-e: end_time(timestamp)\n
-\t-n: nic devices\n
-\t-o: output directory\n
-\tExample:\n
-\t./capture.sh 60*10  # 在默认网卡上抓包600秒\n
-\t./capture.sh  # 手动关闭\n
-\t./capture.sh -d 600 -n p2p1,p2p2 -o \\home\\test  # 抓包10分钟 \n
-\t./capture.sh -s 12:00:00 -d 600 -o \\home\\test # 12点启动抓包程序，抓包10分钟后自动停止\n
+Usage:\n
+  -d: duration_time(seconds)\n
+  -s: start_time(timestamp or 12:00:30 format)\n
+  -e: end_time(timestamp)\n
+  -n: nic devices\n
+  -o: output directory\n
+  -h: show help information\n
+Example:\n
+  ./capture.sh 60*10 \n
+  ./capture.sh  \n
+  ./capture.sh -d 600 -n p2p1,p2p2 -o /home/test   \n
+  ./capture.sh -s 12:00:00 -d 600 -o /home/test \n
 "
 
 # 读取参数
-while getopts "d:s:e:d:o:n:" OPT
+while getopts "d:s:e:d:o:n:h" OPT
 do
   case ${OPT} in
     d)
-      #echo "duration_time's arg: $OPTARG"
       let dt=${OPTARG}
       #echo "duration_time's arg: $dt"
       ;;
@@ -53,9 +53,15 @@ do
     o)
       #echo "output dir's arg: $OPTARG"
       od=${OPTARG}
+      [ ! -d ${od} ] && echo "cannot access \"${od}\": no such dircetory" && exit
+      [ ! ${od:0-1:1} == "/" ] && od=${od}/
+      ;;
+    h)
+      echo -e ${usage}
+      exit
       ;;
     ?)
-      echo -e ${usage}
+      echo "Please input: \"$0 -h\""
       exit
       ;;
   esac
@@ -91,6 +97,7 @@ fi
 
 # 日志输出重定向
 exec >> ${defaultlog}${defaultlogname} 2>> ${defaultlog}${defaultlogname}
+echo "nics:${nics}, starttime:${starttime}, endtime:${endtime}, periodtime:${period,} output_dir:${out_dir}"
 
 # 脚本启动处理
 PIDDir=${defaulttmp}$$/
