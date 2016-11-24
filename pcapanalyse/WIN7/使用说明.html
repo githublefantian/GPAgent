@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html class="theme theme-white">
+<head>
+<meta charset="utf-8">
+<title>使用说明</title>
+<link href="https://www.zybuluo.com/static/assets/template-theme-white.css" rel="stylesheet" media="screen">
+<style type="text/css">
+
+#wmd-preview h1  {
+    color: #0077bb; /* 将标题改为蓝色 */
+}</style>
+</head>
+<body class="theme theme-white">
+<div id="wmd-preview" class="wmd-preview wmd-preview-full-reader"><div class="md-section-divider"></div><div class="md-section-divider"></div><h1 data-anchor-id="i5x4" id="使用说明">使用说明</h1><p data-anchor-id="rpzu"><code>WIN7</code></p><hr><p data-anchor-id="foc8"><div class="toc"><div class="toc">
+<ul>
+<li><a href="#使用说明">使用说明</a><ul>
+<li><a href="#一环境说明">一、环境说明</a></li>
+<li><a href="#二程序使用说明">二、程序使用说明</a></li>
+<li><a href="#三其他说明">三、其他说明</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</p><div class="md-section-divider"></div><h2 data-anchor-id="okkd" id="一环境说明">一、环境说明</h2><ol data-anchor-id="nuhu">
+<li>WIN7</li>
+<li>安装了WinPcap（或者点击安装本目录下的WinPcap.exe）</li>
+<li>安装了wireshark或者是editcap.exe工具（一般在目录<code>C:\Program Files (x86)\Wireshark</code>下）</li>
+</ol><div class="md-section-divider"></div><h2 data-anchor-id="z6tp" id="二程序使用说明">二、程序使用说明</h2><ol data-anchor-id="69bc">
+<li>将要解析的pcapng全部文件拖入WIN7目录下--&gt;<strong>当需要同时解析不同日期抓取的多个数据包时，若设置了DIFF_TIME（即不为0）则该设置只对最后数据包有效</strong>，本程序最好用于解析单个数据包或者时间连续的多个数据包，<strong>当解析不连续的数据包时最好单独运行并保存result.csv结果</strong></li>
+<li>双击<code>run_win7.bat</code>后按提示输入并运行</li>
+<li>成功后会生成result.csv文件，输出结果保存在该文件中，其字段含义如下表</li>
+</ol><table data-anchor-id="snmt" class="table table-striped-white table-bordered">
+<thead>
+<tr>
+ <th style="text-align:center;">字段名</th>
+ <th style="text-align:center;">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+ <td style="text-align:center;"><strong>HTTP PACKET TOTALS</strong></td>
+ <td style="text-align:center;">程序解析的总的HTTP数据包个数（含重发和非验证码请求的响应包）</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>REQUEST TOTALS</strong></td>
+ <td style="text-align:center;">验证码请求总数（不含重发）</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>ALL RESPONSE TOTALS</strong></td>
+ <td style="text-align:center;">响应包总数（不含重发）但包括非验证码请求的响应包</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>SOURCE_IP，SOURCE_PORT， TIME， EPOCH_TIME</strong></td>
+ <td style="text-align:center;">若有未响应的验证码http请求，则会打印出详细的请求IP（SOURCE_IP）， 端口号(SOURCE_PORT)，请求时间(TIME)和请求的精确时间（EPOCH_TIME）</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>NO RESPONSE TOTALS</strong></td>
+ <td style="text-align:center;">没有响应的验证码请求总数(不含重发以及超过DEADLINE时间的请求)</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>DEL_REQUEST TOTALS</strong></td>
+ <td style="text-align:center;">删除的验证码请求总数 （比如不显示请求时间大于<code>最大请求时间-设置的时间差</code>的记录，和<strong>MAX_TIME</strong>、<strong>DIFF_TIME</strong>同时使用）</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>DEADLINE</strong></td>
+ <td style="text-align:center;">result.csv中只显示DEADLINE之前的，没有响应的验证码请求数（其值等于<code>MAX_TIME - DIFF_TIME</code>）</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>MAX_TIME</strong></td>
+ <td style="text-align:center;">验证码请求中最大（最新）的时间</td>
+</tr>
+<tr>
+ <td style="text-align:center;"><strong>DIFF_TIME</strong></td>
+ <td style="text-align:center;">设定的时间差值，单位为秒（result.csv中不显示时间大于<code>MAX_TIME</code>-<code>DIFF_TIME</code>的请求记录，值显示这些记录的总数，即<strong>DEL_REQUEST TOTALS</strong>）</td>
+</tr>
+</tbody></table><div class="md-section-divider"></div><h2 data-anchor-id="ydye" id="三其他说明">三、其他说明</h2><ol data-anchor-id="4zhs">
+<li>没有生成result.csv文件，请查看<code>CDM输出</code>以及目录下的<code>run.log</code>和<code>http-filter.log</code>日志</li>
+<li>运行时间依操作系统配置而定，一般的解析20G文件需要18分</li>
+</ol></div>
+</body>
+</html>
