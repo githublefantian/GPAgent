@@ -14,9 +14,11 @@ RES_FILTER="tcp[20:2]==0x4854"
 FILTER="(${GET_FILTER}) or (${RES_FILTER})"
 
 function print_usage() {
-    usage="\n
+    usage="
     Usage:\n
         $0 -f <pcap/pcapng filename>\n
+    Example:\n
+        $0 -f file1,file2\n
     "
     echo -e $usage
 }
@@ -31,8 +33,10 @@ while [ $# -gt 0 ]; do
         -f | --file)
             shift
             [ "x$1" == "x" ] && echo "Please input the filename!" && exit ${ERROR_PARA}
-            [ ! -f $1 ] && echo " $1 is not a file or not exist!" && exit ${ERROR_PARA}
-            filename=$1
+            filelist=${1//,/ }
+            for filename in ${filelist}; do
+                [ ! -f ${filename} ] && echo " ${filename} is not a file or not exist!" && exit ${ERROR_PARA}
+            done
             shift
             ;;
         *)
@@ -43,23 +47,23 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-input=${filename}
-output=${filename%.*}${SUFFIX}
+# filt the data packets
+begintime=$(date +%s)
+for input in ${filelist}; do
+    output=${input%.*}${SUFFIX}
+    starttime=$(date +%s)
+    tcpdump -r ${input} ${FILTER} -w ${output}
+    if [ $? -ne 0 ];then
+        echo "[ERROR] tcpdump ${input} error!!"
+        rm -rf ${output}
+        continue
+        #exit ${ERROR_TCPDUMP}
+    else
+        endtime=$(date +%s)
+        echo "[INFO] tdpdump \"${input}\" success and costs $(( $endtime - $starttime )) seconds"
+    fi
+done
 
-## filt the data packets
-starttime=$(date +%s)
-
-tcpdump -r ${input} ${FILTER} -w ${output}
-if [ $? -ne 0 ];then
-    echo "[ERROR] tcpdump ${input} error!!"
-    rm -rf ${output}
-    exit ${ERROR_TCPDUMP}
-else
-    echo "[INFO] tcpdump ${input} success"
-fi
-
-endtime=$(date +%s)
-
-echo "[INFO] tdpdump total time: $(( $endtime - $starttime )) seconds"
-
+finishtime=$(date +%s)
+echo "[INFO] tdpdump \"${filelist}\" success and costs $(( $begintime - $finishtime )) seconds in total"
 exit ${SUCCESS_OK}
