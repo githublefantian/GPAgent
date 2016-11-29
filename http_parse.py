@@ -183,17 +183,17 @@ if __name__ == '__main__':
     result_file = pcap_file.replace('.pcap', '_result.csv')
     with open(result_file, 'w') as fw:
         fw.write('ITEM,VALUE\n'
-                 'IMG REQUEST TOTAL,%d\n'
-                 'IMG REQUESt REAL TOTAL,%d\n'
-                 'IMG REQUEST SUCCESS TOTAL,%d\n'
-                 'IMG REQUEST FAILED TOTAL,%d\n'
-                 'IMG NO-RESPONSE TOTAL,%d\n'
-                 'IMG RESPONSE ERROR TOTAL,%d\n'
-                 'IMG RESPONSE CONTENT-TYPE-ERROR TOTAL,%d\n'
-                 'IMG RESPONSE STATUS-CODE-ERROR TOTAL,%d\n' % (total, real, success, real-success, real-response,
+                 'IMAGE REQUEST TOTAL,%d\n'
+                 'IMAGE REQUESt REAL TOTAL,%d\n'
+                 'IMAGE REQUEST SUCCESS TOTAL,%d\n'
+                 'IMAGE REQUEST FAILED TOTAL,%d\n'
+                 'IMAGE NO-RESPONSE TOTAL,%d\n'
+                 'IMAGE RESPONSE ERROR TOTAL,%d\n'
+                 'IMAGE RESPONSE CONTENT-TYPE-ERROR TOTAL,%d\n'
+                 'IMAGE RESPONSE STATUS-CODE-ERROR TOTAL,%d\n' % (total, real, success, real-success, real-response,
                                                                   content_error+other_error, content_error,
                                                                   other_error))
-        fw.write('\nNO-RESPONSE PACKETS,%d\n' % (real-response))
+        fw.write('\n\nNO-RESPONSE PACKETS,%d\n\n' % (real-response))
         fw.write(',,REQUEST_TIME,REQUEST_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION\n')
         for key in no_res_dict.keys():
             [tm, ip, port, ver] = no_res_dict[key]
@@ -201,7 +201,7 @@ if __name__ == '__main__':
             line = ',,%s,%s,%s,%s,%s' % (str_time, tm, ip, port, ver)
             fw.write(line + '\n')
 
-        fw.write('\n\nRESPONSE-ERROR PACKETS,%d\n' % (content_error+other_error))
+        fw.write('\n\nRESPONSE-ERROR PACKETS,%d\n\n' % (content_error+other_error))
         fw.write(',,REQUEST_TIME,REQ_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION,'
                  'RESPONSE_TIME,RES_TIMESTAMP,RESPONSE_IP,RESPONSE_PORT,RES_HTTP-VERSION,'
                  'RES_CODE,RES_STATUS,RES_CONTENT-TYPE\n')

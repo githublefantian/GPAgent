@@ -1,8 +1,9 @@
 #!/usr/bin/bash
 
+trap '' HUP
+
 SUCCESS_OK=0
 ERROR_PARA=1
-ERROR_TCPDUMP=2
 
 SUFFIX="_http.pcap"
 
@@ -57,7 +58,6 @@ for input in ${filelist}; do
         echo "[ERROR] tcpdump ${input} error!!"
         rm -rf ${output}
         continue
-        #exit ${ERROR_TCPDUMP}
     else
         endtime=$(date +%s)
         echo "[INFO] tdpdump \"${input}\" success and costs $(( $endtime - $starttime )) seconds"
@@ -66,6 +66,6 @@ for input in ${filelist}; do
 done
 
 finishtime=$(date +%s)
-echo "[INFO] tdpdump \"${filelist}\" success and costs $(( $finishtime - $begintime )) seconds in total"
+echo "[INFO] deal with \"${filelist}\" success and costs $(( $finishtime - $begintime )) seconds in total"
 
 exit ${SUCCESS_OK}
