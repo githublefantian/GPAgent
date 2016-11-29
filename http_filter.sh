@@ -8,9 +8,9 @@ SUFFIX="_http.pcap"
 
 # GET URL EXAMPLE: `GET /bidimg/get.ashx?i=ffd5377fe6a050b...`
 # `tcp[24:4]==0x2f626964` can match `/bid`; `tcp[28:4]==696d67ef` can match `img/`
-GET_FILTER="tcp[24:4]==0x2f626964"
+GET_FILTER="tcp[24:4]==0x2f626964 and dst port 80"
 # `tcp[20:2]==0x4854` can match `HT` (the first two letters of HTTP)
-RES_FILTER="tcp[20:2]==0x4854"
+RES_FILTER="tcp[20:2]==0x4854 and src port 80"
 FILTER="(${GET_FILTER}) or (${RES_FILTER})"
 
 function print_usage() {
@@ -62,8 +62,10 @@ for input in ${filelist}; do
         endtime=$(date +%s)
         echo "[INFO] tdpdump \"${input}\" success and costs $(( $endtime - $starttime )) seconds"
     fi
+    python ./http_parse.py ${output}
 done
 
 finishtime=$(date +%s)
-echo "[INFO] tdpdump \"${filelist}\" success and costs $(( $begintime - $finishtime )) seconds in total"
+echo "[INFO] tdpdump \"${filelist}\" success and costs $(( $finishtime - $begintime )) seconds in total"
+
 exit ${SUCCESS_OK}
