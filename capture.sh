@@ -4,6 +4,7 @@
 trap '' HUP
 trap 'myexit' INT QUIT TERM
 
+defaultprefix=""                        # 默认前缀,如228_
 defaultnics="p2p1 p2p2 p2p3"          # 默认抓包网卡
 defaultlogname="capture.log"          # 默认日志文件
 defaultdir="/backup/"                 # 默认抓包文件存放目录
@@ -133,7 +134,7 @@ function myexit(){
 
 function startprocess(){
   fn_time=`date +%Y%m%d_%H%M%S`
-  filename=${fn_time}_$1
+  filename=${defaultprefix}${fn_time}_$1
   echo "startprocess: ${filename}.pcap"
   netsniff-ng --in $1 --out ${out_dir}${filename}.pcap --prio-high --verbose --silent --ring-size 500MiB > ${PIDDir}${filename} &
 }

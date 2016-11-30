@@ -75,7 +75,7 @@ def http_filter(pcapfile):
         p = pkt.read_packet()
         if p is None:
             break
-        epoch_time = p.time
+        #epoch_time = p.time
 
         #p.show()
         if p.getlayer('HTTP Request'):
@@ -95,7 +95,7 @@ def http_filter(pcapfile):
                 request_key = src_ip.replace('.', '') + src_port + seq_str
                 if request_key in img_deal_response:
                     continue
-                img_request[request_key] = [epoch_time, src_ip, src_port, version]
+                img_request[request_key] = [p.time, src_ip, src_port, version]
             except Exception as e:
                 print(e)
                 continue
@@ -121,7 +121,7 @@ def http_filter(pcapfile):
                             img_request[response_key][1],
                             img_request[response_key][2],
                             img_request[response_key][3],
-                            epoch_time, str(p['IP'].src), str(p['TCP'].sport), res_version,
+                            p.time, str(p['IP'].src), str(p['TCP'].sport), res_version,
                             res_code, res_status,
                             ]
                     if res_code == "200":
