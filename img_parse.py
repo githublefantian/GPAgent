@@ -4,8 +4,6 @@ reload(sys).setdefaultencoding('UTF-8')
 
 import time
 import os
-import logging
-import logging.handlers
 
 try:
     import scapy.all as scapy
@@ -17,32 +15,17 @@ try:
 except ImportError:
     from scapy.layers import http
 
+
 filever = 'img-parse-v1'
 PADDING = 80
 
-class Cmy_logger(object):
+# 保存所有验证码请求（时间顺序依次添加），每个item内容为KEY（请求包的源IP+源PORT+响应包序列号）
+__img_req_list = []
+# 保存所有验证码请求的响应包（时间顺序依次添加），每个item内容为KEY（响应包的目的IP+目的PORT+序列号）
+# __img_res_list = []
+# 保存所有响应的验证码请求包，{ 'KEY': [响应时间, 是否正常响应], } 格式
+__img_res_dict = {}
 
-    def __init__(self, logname, logger):
-        # create logger
-        self.logger = logging.getLogger(logger)
-        self.logger.setLevel(logging.DEBUG)
-        # for log file
-        fh = logging.handlers.RotatingFileHandler(logname, maxBytes=30 * 1024 * 1024, backupCount=5)
-        fh.setLevel(logging.DEBUG)
-        # for teminal output
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            '%(asctime)s - (%(processName)s|%(process)d,%(threadName)s|%(thread)d) - [%(filename)s:%(funcName)s():%(lineno)s] - [%('
-            'name)s:%(lineno)s]\n  %(levelname)s: %(message)s')
-        fh.setFormatter(formatter)
-        ch.setFormatter(formatter)
-        # add handler
-        self.logger.addHandler(fh)
-        self.logger.addHandler(ch)
-
-    def getlog(self):
-        return self.logger
 
 
 def timefn(fn):
@@ -96,6 +79,7 @@ def http_filter(pcapfile):
                 if request_key in img_deal_response:
                     continue
                 img_request[request_key] = [p.time, src_ip, src_port, version]
+                __img_req_list.append([request_key, p.time, src_ip, src_port, version])
             except Exception as e:
                 print(e)
                 continue
@@ -124,12 +108,16 @@ def http_filter(pcapfile):
                             p.time, str(p['IP'].src), str(p['TCP'].sport), res_version,
                             res_code, res_status,
                             ]
+                    # 响应时间, 是否是正常响应, 0表示正常，1表示不正常
+                    res_time = p.time - img_request[response_key][0]
+                    __img_res_dict[response_key] = [res_time, False]
                     if res_code == "200":
                         contenttype = resdata.getfieldval('Content-Type')
                         if contenttype != "image/png":
                             info.append(contenttype)
                         else:
                             img_ok_count += 1
+                            __img_res_dict[response_key] = [True, res_time]
                             del img_request[response_key]
                             continue
                     if res_code in img_err_response:
@@ -154,36 +142,52 @@ def http_filter(pcapfile):
 
 if __name__ == '__main__':
     # Read parameters from agent.env
-    logd, resultd = '', ''
+    logd, resultd, tmppcapd = ('', '', '')
     with open('agent.env', 'r') as envf:
         for line in envf.readlines():
             if line.startswith('LOG_DIR='):
                 logd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
             elif line.startswith('RESULT_DIR='):
                 resultd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+            elif line.startswith('TMPPCAP_DIR='):
+                tmppcapd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+            else:
+                pass
 
-    if logd == '' or resultd == '':
+    if logd == '' or resultd == '' or tmppcapd == '':
         print("Read parameters from agent.env error!")
     else:
         logd += '/'
         resultd += '/'
+        tmppcapd += '/'
 
-    log = Cmy_logger(logname=(logd + 'img_parse.log'), logger="main").getlog()
+    from agentlog import Cmy_logger
+    log = Cmy_logger(logname=(logd + 'img_parse.log'), logger="img_parse").getlog()
     log.info('start process!')
 
     pcap_file = ''
     mtime, del_request, count = (0, 0, 0)
     argc = len(sys.argv)
-    if argc == 2:
-        # pass a pcap file argument
+    if argc == 2 or argc == 3:
+        # get pcap file
         arg = sys.argv[1]
         pcap_file = arg.strip()
         if pcap_file == '' or not os.path.isfile(pcap_file):
             log.error('http pacp file: %s noooon exist, exit...' % pcap_file)
             sys.exit(1)
-        log.debug('parse: %s begin' % pcap_file)
+
+        # get dump flag
+        if argc == 3 and sys.argv[2].strip() == '--dump':
+            import pickle
+            dump_file = tmppcapd + os.path.basename(pcap_file).replace('.pcap', '.dump')
+            log.info('dump and parse: %s begin' % pcap_file)
+            pickle.dump((__img_req_list, __img_res_dict, http_filter(pcap_file)), open(dump_file, 'w'))
+            log.info('dump and parse: %s end' % pcap_file)
+            sys.exit(0)
+
+        log.info('parse %s begin' % pcap_file)
         total, real, response, success, no_res_dict, res_error_dict = http_filter(pcap_file)
-        log.debug('parse: %s end' % pcap_file)
+        log.info('parse %s end' % pcap_file)
         content_error = 0
         other_error = 0
         for key in res_error_dict.keys():
@@ -194,8 +198,8 @@ if __name__ == '__main__':
     else:
         sys.exit(1)
 
-    #str_mtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mtime))
-    result_file =  resultd + os.path.basename(pcap_file).replace('.pcap', '_result.csv')
+    # 同img_parse_merge.py 代码一样
+    result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '.csv')
     log.info('start write to %s' % result_file)
     with open(result_file, 'w') as fw:
         fw.write('ITEM,VALUE\n'

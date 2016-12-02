@@ -7,15 +7,6 @@ SUCCESS_OK=0
 ERROR_PARA=1
 
 SUFFIX="_img.pcap"
-SPLITSIZE=5000  # unit: million byte
-SPLITOVERLAP=1000 # packet count
-
-# GET URL EXAMPLE: `GET /bidimg/get.ashx?i=ffd5377fe6a050b...`
-# `tcp[24:4]==0x2f626964` can match `/bid`; `tcp[28:4]==696d67ef` can match `img/`
-GET_FILTER="tcp[24:4]==0x2f626964 and dst port 80"
-# `tcp[20:2]==0x4854` can match `HT` (the first two letters of HTTP)
-RES_FILTER="tcp[20:2]==0x4854 and src port 80"
-FILTER="(${GET_FILTER}) or (${RES_FILTER})"
 
 function print_usage() {
     usage="
@@ -53,9 +44,11 @@ while [ $# -gt 0 ]; do
 done
 
 # filt the data packets
+split_files=""
 begintime=$(date +%s)
 for input in ${filelist}; do
-    output=${input%.*}${SUFFIX}
+    input_basename=`basename ${input}`
+    output="${TMPPCAP_DIR}/${input_basename%.*}${SUFFIX}"
     starttime=$(date +%s)
     tcpdump -Z root -r ${input} ${FILTER} -w ${output}
     if [ $? -ne 0 ];then
@@ -70,13 +63,15 @@ for input in ${filelist}; do
     outputsize=`du -m ${output} | gawk '{ print $1 }'`
     if [ ${outputsize} -gt ${SPLITSIZE} ];then
         echo "[INFO] splitting and merging ${output} pcap file"
-        tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE} && rm -rf ${output}
+        rm -rf ${output}split*
+        tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE} # && rm -rf ${output}
+        split_files="${split_files} ${output}"
         # 切分后：
         # 需要将前一个pcap文件结尾的一段响应包合并到下一个pcap文件中
         # 需要将后一个pcap文件开始的一段响应包合并到上一个pcap文件中
         # 但这样会使得有响应的请求统计数据重复计算，如同一个验证码请求分别在两个pcap文件中
-        # 通过后期合并处理能消除响应错误的统计，但是响应成功的统计信息较难消除
-        splitcount=`ls -l | grep "${output}split" | wc -l`
+        # 通过后期合并处理能消除错误的统计
+        splitcount=`ls ${output}* -l | grep "${output}split" | wc -l`
         let splitcount--
         index=${splitcount}
         mv ${output}split ${output}split0
@@ -93,21 +88,23 @@ for input in ${filelist}; do
         mv ${output}split${splitcount} ${output}_${splitcount}
 
         for file in `ls ${output}_*`; do
-            echo "[INFO] python $0 ${file}"
-            python ${0%.*}.py ${file} &
+            echo "[INFO] python $0 ${file} --dump"
+            python ${0%.*}.py ${file} --dump &
         done
     else
         echo "[INFO] python $0 ${output}"
         python ${0%.*}.py ${output} &
     fi
 done
+wait
 
+for file in ${split_files}; do
+    echo "[info] python ${0%.*}_merge.py ${file} &"
+    python ${0%.*}_merge.py ${file} &
+done
 wait
 
 finishtime=$(date +%s)
-echo "[INFO] deal with \"${filelist}\" success and costs $(( $finishtime - $begintime )) seconds in total"
-
-# merge result.csv files
-
+echo "[INFO] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in total"
 
 exit ${SUCCESS_OK}
