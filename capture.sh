@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # 1:HUP 2:INT 3:QUIT 15:TERM
 trap '' HUP
