@@ -92,7 +92,7 @@ for input in ${filelist}; do
             tcpdump -Z root -r ${splitinfile} "${RES_FILTER}" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}
             mergecap -F pcap -w ${mergeoutfile} ${mergeinfile} tmp.pcap && rm -rf tmp.pcap
             let index--
-            [ $index -eq 0 ] && rm -rf {output}split0 && break
+            [ $index -eq 0 ] && rm -rf ${output}split0 && break
         done
 
         for file in `ls ${output}_*`; do
