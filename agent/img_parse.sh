@@ -100,6 +100,7 @@ for input in ${filelist}; do
             echo "[INFO] python $0 ${file} --dump"
             python ${0%.*}.py ${file} --dump &
             if [ ${thread_count} -gt ${SPLIT_PARALLEL} ]; then
+                echo "[INFO] thread_count: ${thread_count}; SPLIT_PARALLER:${SPLIT_PARALLEL} ... wait ...."
                 wait
             else
                 let thread_count++
