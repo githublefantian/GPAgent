@@ -80,12 +80,12 @@ else:
     log.info('merge && parse: %s begin' % pcap_file)
     (img_req_list, img_res_dict, http_filter) = dump_data[0]
     total, real, response, success, no_res_dict, res_error_dict = http_filter
-    img_res_list = uniq_item_list(img_res_dict)
+    img_req_list = uniq_item_list(img_req_list)
 
     for index in range(1, count):
         (img_req_listb, img_res_dictb, http_filterb) = dump_data[index]
         totalb, realb, responseb, successb, no_res_dictb, res_error_dictb = http_filterb
-        img_res_listb = uniq_item_list(img_res_listb)
+        img_req_listb = uniq_item_list(img_req_listb)
         total += totalb
         real += realb
         response += responseb
