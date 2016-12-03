@@ -81,11 +81,10 @@ if argc == 2 :
                         if key in no_res_dictb: # 没有响应
                             pass
                         else:                   # 响应只在b
-                            del no_res_dict[key]
-                            pass
+                            if key in no_res_dict: del no_res_dict[key]
                     else:
                         if key in no_res_dictb: # 响应只在a
-                            del no_res_dict[key]
+                            if key in no_res_dict: del no_res_dict[key]
                         else:                   # 响应在a,b
                             response -= 1
                             success -= 1

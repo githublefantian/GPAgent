@@ -62,6 +62,8 @@ for input in ${filelist}; do
     fi
 
     outputsize=`du -m ${output} | gawk '{ print $1 }'`
+    # 检查配置参数
+    [ ${SPLITSIZE} -gt 1999000 ] && echo "[ERROR] SPLITSIZE: ${SPLITSIZE} too big!"
     if [ ${outputsize} -gt ${SPLITSIZE} ];then
         echo "[INFO] splitting and merging ${output} pcap file"
         rm -rf ${output}split*
@@ -75,6 +77,7 @@ for input in ${filelist}; do
         # 通过后期合并处理能消除错误的统计
         index=`ls ${output}* -l | grep "${output}split" | wc -l`
         echo "[INFO] ls ${output}* -l | grep ${output}split | wc -l and NO.: ${index}"
+        [ ${index} -lt 2 ] && echo "[ERROR] SPLITSIZE_TCPDUMP or SPLITSIZE error!" && exit ${ERROR_TCPDUMP}
         let index--
         mv ${output}split ${output}split0
         cp ${output}split${index} ${output}_${index}
