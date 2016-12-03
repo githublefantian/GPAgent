@@ -5,6 +5,7 @@ trap '' HUP
 
 SUCCESS_OK=0
 ERROR_PARA=1
+ERROR_TCPDUMP=2
 
 SUFFIX="_img.pcap"
 
@@ -54,7 +55,7 @@ for input in ${filelist}; do
     if [ $? -ne 0 ];then
         echo "[ERROR] tcpdump ${input} error!!"
         rm -rf ${output}
-        continue
+        exit ${ERROR_TCPDUMP}
     else
         endtime=$(date +%s)
         echo "[INFO] deal with \"${input}\" success and costs $(( $endtime - $starttime )) seconds"
@@ -64,32 +65,42 @@ for input in ${filelist}; do
     if [ ${outputsize} -gt ${SPLITSIZE} ];then
         echo "[INFO] splitting and merging ${output} pcap file"
         rm -rf ${output}split*
-        tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE} # && rm -rf ${output}
+        echo "[INFO] tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE_TCPDUMP}"
+        tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE_TCPDUMP} # && rm -rf ${output}
         split_files="${split_files} ${output}"
         # 切分后：
         # 需要将前一个pcap文件结尾的一段响应包合并到下一个pcap文件中
         # 需要将后一个pcap文件开始的一段响应包合并到上一个pcap文件中
         # 但这样会使得有响应的请求统计数据重复计算，如同一个验证码请求分别在两个pcap文件中
         # 通过后期合并处理能消除错误的统计
-        splitcount=`ls ${output}* -l | grep "${output}split" | wc -l`
-        let splitcount--
-        index=${splitcount}
+        index=`ls ${output}* -l | grep "${output}split" | wc -l`
+        echo "[INFO] ls ${output}* -l | grep ${output}split | wc -l and NO.: ${index}"
+        let index--
         mv ${output}split ${output}split0
+        cp ${output}split${index} ${output}_${index}
+        echo "[INFO] merging ......"
+        # 从大到小, 逆向进行合并, mergeoutfile 是合并和的文件，最后一个split文件不用合并
         while : ; do
             splitinfile=${output}split${index}
             let splitout=index-1
             mergeinfile=${output}split${splitout}
             mergeoutfile=${output}_${splitout}
-            tcpdump -Z root -r ${splitinfile} "${RES_FILTER}" -w tmp.pcap -c ${SPLITOVERLAP}
-            mergecap -F pcap -w ${mergeoutfile} ${mergeinfile} tmp.pcap && rm -rf tmp.pcap ${mergeinfile}
+            #echo " [INFO] tcpdump -Z root -r ${splitinfile} \"${RES_FILTER}\" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}"
+            tcpdump -Z root -r ${splitinfile} "${RES_FILTER}" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}
+            mergecap -F pcap -w ${mergeoutfile} ${mergeinfile} tmp.pcap && rm -rf tmp.pcap
             let index--
-            [ $index -eq 0 ] && break
+            [ $index -eq 0 ] && rm -rf {output}split0 && break
         done
-        mv ${output}split${splitcount} ${output}_${splitcount}
 
         for file in `ls ${output}_*`; do
+            thread_count=1
             echo "[INFO] python $0 ${file} --dump"
             python ${0%.*}.py ${file} --dump &
+            if [ ${thread_count} -gt ${SPLIT_PARALLEL} ]; then
+                wait
+            else
+                let thread_count++
+            fi
         done
     else
         echo "[INFO] python $0 ${output}"
@@ -103,6 +114,11 @@ for file in ${split_files}; do
     python ${0%.*}_merge.py ${file} &
 done
 wait
+
+echo "del ${output} split-files"
+rm -rf ${output}_*
+echo "del ${output} dump-files"
+rm -rf ${output//.pcap/.dump}_*
 
 finishtime=$(date +%s)
 echo "[INFO] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in total"
