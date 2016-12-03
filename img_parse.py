@@ -1,5 +1,3 @@
-# -*- coding:utf-8 -*-
-import sys
 reload(sys).setdefaultencoding('UTF-8')
 
 import time
@@ -25,7 +23,6 @@ __img_req_list = []
 # __img_res_list = []
 # 保存所有响应的验证码请求包，{ 'KEY': [响应时间, 是否正常响应], } 格式
 __img_res_dict = {}
-
 
 
 def timefn(fn):
@@ -142,8 +139,9 @@ def http_filter(pcapfile):
 
 if __name__ == '__main__':
     # Read parameters from agent.env
+    from cmdmacro import DEFAULT_ENV
     logd, resultd, tmppcapd = ('', '', '')
-    with open('agent.env', 'r') as envf:
+    with open(DEFAULT_ENV, 'r') as envf:
         for line in envf.readlines():
             if line.startswith('LOG_DIR='):
                 logd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
@@ -181,13 +179,16 @@ if __name__ == '__main__':
             import pickle
             dump_file = tmppcapd + os.path.basename(pcap_file).replace('.pcap', '.dump')
             log.info('dump and parse: %s begin' % pcap_file)
-            pickle.dump((__img_req_list, __img_res_dict, http_filter(pcap_file)), open(dump_file, 'w'))
+            filterdata = http_filter(pcap_file)
+            pickle.dump((__img_req_list, __img_res_dict, filterdata), open(dump_file, 'w'))
             log.info('dump and parse: %s end' % pcap_file)
             sys.exit(0)
 
         log.info('parse %s begin' % pcap_file)
         total, real, response, success, no_res_dict, res_error_dict = http_filter(pcap_file)
         log.info('parse %s end' % pcap_file)
+
+        # 同img_parse_merge.py 代码一样
         content_error = 0
         other_error = 0
         for key in res_error_dict.keys():
@@ -198,10 +199,9 @@ if __name__ == '__main__':
     else:
         sys.exit(1)
 
-    # 同img_parse_merge.py 代码一样
     result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '.csv')
     log.info('start write to %s' % result_file)
-    with open(result_file, 'w') as fw:
+    with open(DEFAULT_ENV, 'w') as fw:
         fw.write('ITEM,VALUE\n'
                  'IMAGE REQUEST TOTAL,%d\n'
                  'IMAGE REQUESt REAL TOTAL,%d\n'

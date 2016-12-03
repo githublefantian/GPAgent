@@ -5,10 +5,26 @@ import sys
 import time
 
 from agentlog import Cmy_logger
+from cmdmacro import DEFAULT_ENV
+
+# 更新错误响应字典
+def update_res_error(dstdict={}, srcdict={}):
+    for key in dstdict:
+        if key in srcdict:
+            dstdict[key] += srcdict[key]
+            tmplist = []
+            for item in dstdict[key]:
+                if not item in tmplist:
+                    tmplist.append(item)
+            dstdict[key] = tmplist
+    for key in srcdict:
+        if key not in dstdict:
+            dstdict[key] = srcdict[key]
+
 
 # read env
 logd, resultd, tmppcapd = ('', '', '')
-with open('agent.env', 'r') as envf:
+with open(DEFAULT_ENV, 'r') as envf:
     for line in envf.readlines():
         if line.startswith('LOG_DIR='):
             logd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
@@ -33,7 +49,11 @@ log.info('img_parse_merge.py begin!')
 pcap_file = ''
 mtime, del_request, count = (0, 0, 0)
 argc = len(sys.argv)
-if argc == 2 :
+if argc != 2:
+    log.error("Required parameter missiong...")
+    log.info("Example: %s pcapfile.pcap" % sys.argv[0])
+    exit(1)
+else:
     # get pcap file
     arg = sys.argv[1]
     pcap_file = arg.strip()
@@ -62,8 +82,8 @@ if argc == 2 :
         response += responseb
         success += successb
         res_error_dicta = res_error_dict.copy()
+        update_res_error(res_error_dict, res_error_dictb)
         no_res_dicta = no_res_dict.copy()
-        res_error_dict.update(res_error_dictb)
         no_res_dict.update(no_res_dictb)
 
         req_len = len(img_req_list)
@@ -89,6 +109,7 @@ if argc == 2 :
                             response -= 1
                             success -= 1
 
+        # 更新响应列表，删除重复的条目
         for i in keylist:
             key = img_req_listb[i][0]
             if key in img_res_dictb:
@@ -97,12 +118,9 @@ if argc == 2 :
         img_req_list += img_req_listb
         img_res_dict.update(img_res_dictb)
 
-        del img_req_listb
-        del res_error_dictb
-        del no_res_dictb
-
     log.info('merge && parse: %s end' % pcap_file)
 
+    ## 同 img_parse.py 代码一样
     content_error = 0
     other_error = 0
     for key in res_error_dict.keys():
@@ -111,7 +129,6 @@ if argc == 2 :
         else:
             content_error = len(res_error_dict["200"])
 
-    ## 同 img_parse.py 代码一样
     result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '.csv')
     log.info('start write to %s' % result_file)
     with open(result_file, 'w') as fw:
@@ -151,4 +168,3 @@ if argc == 2 :
                 fw.write('%s' % line)
 
         log.info('write to %s end' % result_file)
-
