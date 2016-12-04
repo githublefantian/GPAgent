@@ -95,12 +95,13 @@ for input in ${filelist}; do
             [ $index -eq 0 ] && rm -rf ${output}split0 && break
         done
 
+        thread_count=1
         for file in `ls ${output}_*`; do
-            thread_count=1
             echo "[INFO] python $0 ${file} --dump"
             python ${0%.*}.py ${file} --dump &
+            echo "[INFO] thread_count: ${thread_count}; SPLIT_PARALLER:${SPLIT_PARALLEL} ... wait ??? "
             if [ ${thread_count} -gt ${SPLIT_PARALLEL} ]; then
-                echo "[INFO] thread_count: ${thread_count}; SPLIT_PARALLER:${SPLIT_PARALLEL} ... wait ...."
+                echo "[INFO] ... wait ...."
                 wait
             else
                 let thread_count++
@@ -111,12 +112,14 @@ for input in ${filelist}; do
         python ${0%.*}.py ${output} &
     fi
 done
+echo "[INFO] ... wait ...."
 wait
 
 for file in ${split_files}; do
     echo "[info] python ${0%.*}_merge.py ${file} &"
     python ${0%.*}_merge.py ${file} &
 done
+echo "[INFO] ... wait ...."
 wait
 
 echo "[INFO] del ${output} split-files"
