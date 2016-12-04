@@ -79,12 +79,15 @@ for input in ${filelist}; do
         echo "[INFO] ls ${output}* -l | grep ${output}split | wc -l and NO.: ${index}"
         [ ${index} -lt 2 ] && echo "[ERROR] SPLITSIZE_TCPDUMP or SPLITSIZE error!" && exit ${ERROR_TCPDUMP}
         let index--
+
+        # 修改第一个split文件名，方便统一处理
         mv ${output}split ${output}split0
+        # 拷贝最后一个split文件，方便统一处理
         cp ${output}split${index} ${output}_${index}
-        echo "[INFO] merging ......"
         # 从大到小, 逆向进行合并, mergeoutfile 是合并和的文件，最后一个split文件不用合并
+        echo "[INFO] merging ......"
         while : ; do
-            splitinfile=${output}split${index}
+            splitinfile=${output}split${index} # 用于提取tmp.pcap，上一个处理的split文件
             let splitout=index-1
             mergeinfile=${output}split${splitout}
             mergeoutfile=${output}_${splitout}

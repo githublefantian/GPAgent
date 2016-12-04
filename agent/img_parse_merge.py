@@ -40,21 +40,12 @@ def merge_dump_files(dump_file=''):
             count += 1
 
     total, img_req_dict, no_res_dict, res_error_dict = dump_data[0]
-    # 倒叙排序
-    img_req_list = get_sorted_request(img_req_dict)
-    index = 0
     for index in range(1, count):
         totalb, img_req_dictb, no_res_dictb, res_error_dictb = dump_data[index]
         total += totalb
         img_req_dict.update(img_req_dictb)
         no_res_dict.update(no_res_dictb)
         update_res_error(res_error_dict, res_error_dictb)
-        for item in img_req_list[:int(SPLIT_OVERLAP)]:
-            key = item[0]
-            if key in img_req_dictb:        # 请求在a,b
-                total -= 1
-        if (index + 1) != count:
-            img_req_list = get_sorted_request(img_req_dictb)
 
     return total, img_req_dict, no_res_dict, res_error_dict
 
