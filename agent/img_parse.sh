@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
+
 source ./agent.env
 
+# 1:HUP 2:INT 3:QUIT 15:TERM
 trap '' HUP
+trap 'myexit' INT QUIT TERM
 
 SUCCESS_OK=0
 ERROR_PARA=1
 ERROR_TCPDUMP=2
+ABNORMAL_EXIT=3
 
 SUFFIX="_img.pcap"
 
@@ -19,6 +23,25 @@ function print_usage() {
     echo -e $usage
 }
 
+
+function myexit(){
+    echo "[$0]stop all relevant program!"
+    for fn in ${filelist}; do
+        basefn=`basename ${fn}`
+        echo "[$0] ps aux | grep \"${basefn%.*}\" | grep -v $$ | grep -v grep | gawk '{ print \$2 }' | xargs kill -9"
+        ps aux | grep "${basefn%.*}" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -9 2> /dev/null
+        echo "[$0] rm -rf ${TMPPCAP_DIR}/${basefn%.*}*"
+        rm -rf ${TMPPCAP_DIR}/${basefn%.*}*
+    done
+    currenttime=`date`
+    timestamp=`date +%s`
+    echo "[$0]PID: $$, myexit!"
+    echo -e "[$0]====script stop time:${currenttime} (${timestamp})===="
+    exit ${ABNORMAL_EXIT}
+}
+
+
+filelist=""
 # parse parameters
 [ $# -eq 0 ] && print_usage && exit ${ERROR_PARA}
 while [ $# -gt 0 ]; do
@@ -44,6 +67,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+
 # filt the data packets
 split_files=""
 begintime=$(date +%s)
@@ -58,16 +82,16 @@ for input in ${filelist}; do
         exit ${ERROR_TCPDUMP}
     else
         endtime=$(date +%s)
-        echo "[INFO] deal with \"${input}\" success and costs $(( $endtime - $starttime )) seconds"
+        echo "[$0] deal with \"${input}\" success and costs $(( $endtime - $starttime )) seconds"
     fi
 
     outputsize=`du -m ${output} | gawk '{ print $1 }'`
     # 检查配置参数
     [ ${SPLITSIZE} -gt 1999000 ] && echo "[ERROR] SPLITSIZE: ${SPLITSIZE} too big!"
     if [ ${outputsize} -gt ${SPLITSIZE} ];then
-        echo "[INFO] splitting and merging ${output} pcap file"
+        echo "[$0] splitting and merging ${output} pcap file"
         rm -rf ${output}split*
-        echo "[INFO] tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE_TCPDUMP}"
+        echo "[$0] tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE_TCPDUMP}"
         tcpdump -Z root -r ${output} -w ${output}split -C ${SPLITSIZE_TCPDUMP} # && rm -rf ${output}
         split_files="${split_files} ${output}"
         # 切分后：
@@ -76,7 +100,7 @@ for input in ${filelist}; do
         # 但这样会使得有响应的请求统计数据重复计算，如同一个验证码请求分别在两个pcap文件中
         # 通过后期合并处理能消除错误的统计
         index=`ls ${output}* -l | grep "${output}split" | wc -l`
-        echo "[INFO] ls ${output}* -l | grep ${output}split | wc -l and NO.: ${index}"
+        echo "[$0] ls ${output}* -l | grep ${output}split | wc -l and NO.: ${index}"
         [ ${index} -lt 2 ] && echo "[ERROR] SPLITSIZE_TCPDUMP or SPLITSIZE error!" && exit ${ERROR_TCPDUMP}
         let index--
 
@@ -85,13 +109,13 @@ for input in ${filelist}; do
         # 拷贝最后一个split文件，方便统一处理
         cp ${output}split${index} ${output}_${index}
         # 从大到小, 逆向进行合并, mergeoutfile 是合并和的文件，最后一个split文件不用合并
-        echo "[INFO] merging ......"
+        echo "[$0] merging ......"
         while : ; do
             splitinfile=${output}split${index} # 用于提取tmp.pcap，上一个处理的split文件
             let splitout=index-1
             mergeinfile=${output}split${splitout}
             mergeoutfile=${output}_${splitout}
-            echo " [INFO] tcpdump -Z root -r ${splitinfile} \"${RES_FILTER}\" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}"
+            echo " [$0] tcpdump -Z root -r ${splitinfile} \"${RES_FILTER}\" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}"
             tcpdump -Z root -r ${splitinfile} "${RES_FILTER}" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}
             mergecap -F pcap -w ${mergeoutfile} ${mergeinfile} tmp.pcap && rm -rf tmp.pcap
             let index--
@@ -100,37 +124,39 @@ for input in ${filelist}; do
 
         thread_count=1
         for file in `ls ${output}_*`; do
-            echo "[INFO] python $0 ${file} --dump"
+            echo "[$0] python $0 ${file} --dump"
             python ${0%.*}.py ${file} --dump &
-            echo "[INFO] thread_count: ${thread_count}; SPLIT_PARALLER:${SPLIT_PARALLEL} ... wait ??? "
+            echo "[$0] thread_count: ${thread_count}; SPLIT_PARALLER:${SPLIT_PARALLEL} ... wait ??? "
             if [ ${thread_count} -gt ${SPLIT_PARALLEL} ]; then
-                echo "[INFO] ... wait ...."
+                echo "[$0] ... wait ...."
                 wait
             else
                 let thread_count++
             fi
         done
     else
-        echo "[INFO] python $0 ${output}"
+        echo "[$0] python $0 ${output}"
         python ${0%.*}.py ${output} &
     fi
 done
-echo "[INFO] ... wait ...."
+echo "[$0] ... wait ...."
 wait
 
 for file in ${split_files}; do
     echo "[info] python ${0%.*}_merge.py ${file} &"
     python ${0%.*}_merge.py ${file} &
 done
-echo "[INFO] ... wait ...."
+echo "[$0] ... wait ...."
 wait
 
-echo "[INFO] del ${output} split-files"
+echo "[$0] del ${output} split-files"
 rm -rf ${output}_*
-echo "[INFO] del ${output} dump-files"
+echo "[$0] del ${output} dump-files"
 rm -rf ${output//.pcap/.dump}_*
 
 finishtime=$(date +%s)
-echo "[INFO] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in total"
+echo "[$0] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in total"
 
 exit ${SUCCESS_OK}
+
+

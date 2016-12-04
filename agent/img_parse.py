@@ -164,7 +164,7 @@ def p_img_no_reponse(fw, no_response_dict={}):
 
 
 def p_img_err_reponse(fw, res_error_dict={}):
-    (sum, ok_error) = get_err_response_sum()
+    (sum, ok_error) = get_err_response_sum(res_error_dict)
     fw.write('RESPONSE-ERROR PACKETS,%d\n\n' % sum)
     fw.write(',,REQUEST_TIME,REQ_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION,'
     'RESPONSE_TIME,RES_TIMESTAMP,RESPONSE_IP,RESPONSE_PORT,RES_HTTP-VERSION,'
