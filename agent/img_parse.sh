@@ -88,7 +88,7 @@ for input in ${filelist}; do
             let splitout=index-1
             mergeinfile=${output}split${splitout}
             mergeoutfile=${output}_${splitout}
-            #echo " [INFO] tcpdump -Z root -r ${splitinfile} \"${RES_FILTER}\" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}"
+            echo " [INFO] tcpdump -Z root -r ${splitinfile} \"${RES_FILTER}\" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}"
             tcpdump -Z root -r ${splitinfile} "${RES_FILTER}" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}
             mergecap -F pcap -w ${mergeoutfile} ${mergeinfile} tmp.pcap && rm -rf tmp.pcap
             let index--
@@ -119,9 +119,9 @@ for file in ${split_files}; do
 done
 wait
 
-echo "del ${output} split-files"
+echo "[INFO] del ${output} split-files"
 rm -rf ${output}_*
-echo "del ${output} dump-files"
+echo "[INFO] del ${output} dump-files"
 rm -rf ${output//.pcap/.dump}_*
 
 finishtime=$(date +%s)
