@@ -145,8 +145,12 @@ def get_err_response_sum(err_res={}):
 
 
 def p_img_request(fw, img_request={}):
-    pass
-
+    #fw.write('TOTAL,%d\n\n' % len(img_request))
+    fw.write('REQUEST_TIME,SRC_IP,SRC_PORT,DST_IP,DST_PORT,RESPONSE_VERSION,DELTA-TIME\n')
+    req_list = sorted(img_request.iteritems(), key=lambda  d: d[1][0])
+    for item in req_list:
+        fw.write('%f,%s,%s,%s,%s,%d,%f\n' % tuple(item[1]))
+    return
 
 def p_img_no_reponse(fw, no_response_dict={}):
     fw.write('NO-RESPONSE PACKETS,%d\n\n' % (len(no_response_dict)))
@@ -262,9 +266,14 @@ if __name__ == '__main__':
     with open(result_file, 'w') as fw:
         p_statistic_info(fw, result)
         fw.write('\n\n')
-        # p_img_request(fw, result[1])
         p_img_no_reponse(fw, result[2])
         fw.write('\n\n')
         p_img_err_reponse(fw, result[3])
-
     log.info('writing to %s end' % result_file)
+
+    # 输出请求信息
+    request_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_request.csv')
+    log.info('writing to %s start' % request_file)
+    with open(request_file, 'w') as fw:
+        p_img_request(fw, result[1])
+    log.info('writing to %s end' % request_file)

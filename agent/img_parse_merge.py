@@ -27,8 +27,8 @@ def update_res_error(dstdict={}, srcdict={}):
             dstdict[code] = srcdict[code].copy
 
 def update_no_res(dstdict={}, srcdict={}, dstreq={}, srcreq={}):
-    # 消除请求在dst,src中，但前者响应正常，后者无响应
-    # 请求在a,b 但响应只在a
+    # 请求在a,b 但响应只在a; key 在 srcdict, 不在 dstdic
+    count = 0
     keylist = []
     for key in srcdict:
         if key not in dstdict:
@@ -37,8 +37,18 @@ def update_no_res(dstdict={}, srcdict={}, dstreq={}, srcreq={}):
                 srcreq[key] = dstreq[key]
     for key in keylist:
         del srcdict[key]
+    count += len(keylist)
+    del keylist[:]
+    # 请求在a,b 但响应只在b; key 在 dstdict, 不在 srcdic
+    for key in dstdict:
+        if key not in srcdict:
+            if (key in srcreq) and (key in dstreq):
+                keylist.append(key)
+    for key in keylist:
+        del dstdict[key]
     dstdict.update(srcdict)
-    return len(keylist)
+    count += len(keylist)
+    return count
 
 @img_parse.fntime
 def merge_dump_files(dump_file=''):
@@ -113,9 +123,14 @@ if __name__ == "__main__":
     with open(result_file, 'w') as fw:
         img_parse.p_statistic_info(fw, result)
         fw.write('\n\n')
-        # p_img_request(fw, result[1])
         img_parse.p_img_no_reponse(fw, result[2])
         fw.write('\n\n')
         img_parse.p_img_err_reponse(fw, result[3])
         log.info('writing to %s end' % result_file)
 
+    # 输出请求信息
+    request_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_request.csv')
+    log.info('writing to %s start' % request_file)
+    with open(request_file, 'w') as fw:
+        img_parse.p_img_request(fw, result[1])
+    log.info('writing to %s end' % request_file)
