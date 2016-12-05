@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source ./agent.env
+source /root/agent/agent.env
 
 # 1:HUP 2:INT 3:QUIT 15:TERM
 trap '' HUP

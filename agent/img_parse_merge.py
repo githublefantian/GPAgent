@@ -26,6 +26,19 @@ def update_res_error(dstdict={}, srcdict={}):
         if code not in dstdict:
             dstdict[code] = srcdict[code].copy
 
+def update_no_res(dstdict={}, srcdict={}, dstreq={}, srcreq={}):
+    # 消除请求在dst,src中，但前者响应正常，后者无响应
+    # 请求在a,b 但响应只在a
+    keylist = []
+    for key in srcdict:
+        if key not in dstdict:
+            if (key in srcreq) and (key in dstreq):
+                keylist.append(key)
+                srcreq[key] = dstreq[key]
+    for key in keylist:
+        del srcdict[key]
+    dstdict.update(srcdict)
+    return len(keylist)
 
 @img_parse.fntime
 def merge_dump_files(dump_file=''):
@@ -43,9 +56,10 @@ def merge_dump_files(dump_file=''):
     for index in range(1, count):
         totalb, img_req_dictb, no_res_dictb, res_error_dictb = dump_data[index]
         total += totalb
-        img_req_dict.update(img_req_dictb)
-        no_res_dict.update(no_res_dictb)
+        update_no_res(no_res_dict, no_res_dictb, img_req_dict, img_req_dictb)
         update_res_error(res_error_dict, res_error_dictb)
+        # 一定要放在最后更新，防止影响前两个数据结构的更新
+        img_req_dict.update(img_req_dictb)
 
     return total, img_req_dict, no_res_dict, res_error_dict
 

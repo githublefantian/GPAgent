@@ -70,7 +70,7 @@ def img_filter(pcapfile):
                 if not path.startswith('/bidimg/get.ashx'):
                     continue
                 img_req_count += 1
-                request_key = src_ip.replace('.', '') + src_port + seq_str
+                request_key = src_ip + ':' + src_port + ':' + seq_str
                 if request_key in img_deal_response:
                     continue
                 img_no_response[request_key] = [p.time, src_ip, src_port, version]
@@ -84,7 +84,7 @@ def img_filter(pcapfile):
                 dst_ip = str(p['IP'].dst)
                 dst_port = str(p['TCP'].dport)
                 ack_no = str(p['TCP'].ack)
-                response_key = dst_ip.replace('.', '') + dst_port + ack_no
+                response_key = dst_ip + ':' + dst_port + ':' + ack_no
 
                 if response_key in img_deal_response:
                     continue
