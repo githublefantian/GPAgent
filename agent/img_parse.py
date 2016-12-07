@@ -38,7 +38,7 @@ def img_filter(pcapfile):
     # 保存所有验证码请求, { 'KEY': [时间戳, 源IP, 源PORT, 目的IP, 目的PORT, 响应类型, 响应时间],}
     # 如 [p.time, src_ip, src_port, dst_ip, dst_port, NO_NO_RESPONSE, 0]
     img_request = {}
-    # 保存目前没有响应的请求, {KEY1: [p.time, src_ip, src_port, version]}
+    # 保存目前没有响应的请求, {KEY1: [p.time, src_ip, src_port, version, path]}
     img_no_response = {}
     # 保存响应错误的请求/响应信息 {CODE1: {KEY1: LIST1, KEY2: LIST2}}
     img_err_response = {}
@@ -73,7 +73,7 @@ def img_filter(pcapfile):
                 request_key = src_ip + ':' + src_port + ':' + seq_str
                 if request_key in img_deal_response:
                     continue
-                img_no_response[request_key] = [p.time, src_ip, src_port, version]
+                img_no_response[request_key] = [p.time, src_ip, src_port, version, path]
                 img_request[request_key] = [p.time, src_ip, src_port, dst_ip, dst_port, NO_NO_RESPONSE, 0]
             except Exception as e:
                 print(e)
@@ -110,6 +110,7 @@ def img_filter(pcapfile):
                         if contenttype != "image/png":
                             img_request[response_key][5] = NO_CT_ERROR_RESPONSE
                             info.append(contenttype)
+                            info.append(img_no_response[response_key][4])
                         else:
                             img_request[response_key][5] = NO_NORMAL_RESPONSE
                             del img_no_response[response_key]
@@ -156,23 +157,37 @@ def p_img_no_reponse(fw, no_response_dict={}):
     fw.write('NO-RESPONSE PACKETS,%d\n\n' % (len(no_response_dict)))
     if len(no_response_dict) == 0:
         return 0
-    fw.write(',,REQUEST_TIME,REQUEST_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION\n')
+    fw.write(',,REQUEST_TIME,REQUEST_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION,REQUEST_PATH\n')
     no_response_list = sorted(no_response_dict.iteritems(), key=lambda d: d[1][0])
     for key in no_response_list:
-        [tm, ip, port, ver] = key[1]
+        [tm, ip, port, ver, path] = key[1][:5]
         str_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(tm))
-        line = ',,%s,%f,%s,%s,%s' % (str_time, tm, ip, port, ver)
+        line = ',,%s,%f,%s,%s,%s,%s' % (str_time, tm, ip, port, ver, path)
         fw.write(line + '\n')
 
     return len(no_response_dict)
 
+def p_img_err_reponse_path(fw, res_error_dict={}):
+    (sum, ok_error) = get_err_response_sum(res_error_dict)
+    fw.write('REQUEST_TOTAL,%d' % ok_error)
+    if ok_error == 0:
+        return
+    fw.write('REQUEST_TIMESTAMP,REQUEST_PATH\n')
+    if "200" in res_error_dict.keys():
+        res_error_list = sorted(res_error_dict["200"].iteritems(), key=lambda d: d[1][0])
+        for item in res_error_list:
+            data = item[1]
+            line = '%f,%s\n' % (data[0], data[11])
+            fw.write('%s' % line)
+
+    return
 
 def p_img_err_reponse(fw, res_error_dict={}):
     (sum, ok_error) = get_err_response_sum(res_error_dict)
     fw.write('RESPONSE-ERROR PACKETS,%d\n\n' % sum)
     fw.write(',,REQUEST_TIME,REQ_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION,'
     'RESPONSE_TIME,RES_TIMESTAMP,RESPONSE_IP,RESPONSE_PORT,RES_HTTP-VERSION,'
-    'RES_CODE,RES_STATUS,RES_CONTENT-TYPE\n')
+    'RES_CODE,RES_STATUS,RES_CONTENT-TYPE,REQUEST_PATH\n')
     for code in res_error_dict.keys():
         res_error_list = sorted(res_error_dict[code].iteritems(), key=lambda d: d[1][0])
         for item in res_error_list:
@@ -182,7 +197,7 @@ def p_img_err_reponse(fw, res_error_dict={}):
             str_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(data[4]))
             line += '%s,%f,%s,%s,%s,' % (str_time, data[4], data[5], data[6], data[7])
             if code == "200":
-                line += '%s,%s,%s\n' % (data[8], data[9], data[10])
+                line += '%s,%s,%s,%s\n' % (data[8], data[9], data[10], data[11])
             else:
                 line += '%s,%s\n' % (data[8], data[9])
             fw.write('%s' % line)
@@ -271,9 +286,18 @@ if __name__ == '__main__':
         p_img_err_reponse(fw, result[3])
     log.info('writing to %s end' % result_file)
 
+    # 输出content-type错误的IMG请求路径
+    result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_error_path.csv')
+    log.info('writing to %s start' % result_file)
+    with open(result_file, 'w') as fw:
+        p_img_err_reponse_path(fw, result[3])
+    log.info('writing to %s end' % result_file)
+
+    '''
     # 输出请求信息
-    request_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_request.csv')
+    result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_request.csv')
     log.info('writing to %s start' % request_file)
     with open(request_file, 'w') as fw:
         p_img_request(fw, result[1])
     log.info('writing to %s end' % request_file)
+    '''

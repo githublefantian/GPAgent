@@ -128,9 +128,18 @@ if __name__ == "__main__":
         img_parse.p_img_err_reponse(fw, result[3])
         log.info('writing to %s end' % result_file)
 
+    # 输出content-type错误的IMG请求路径
+    result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_error_path.csv')
+    log.info('writing to %s start' % result_file)
+    with open(result_file, 'w') as fw:
+        img_parse.p_img_err_reponse_path(fw, result[3])
+    log.info('writing to %s end' % result_file)
+
+    '''
     # 输出请求信息
     request_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_request.csv')
     log.info('writing to %s start' % request_file)
     with open(request_file, 'w') as fw:
         img_parse.p_img_request(fw, result[1])
     log.info('writing to %s end' % request_file)
+    '''
