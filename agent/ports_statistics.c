@@ -83,10 +83,17 @@ void parser(char *file)
 
     //Char array to hold the error. PCAP_ERRBUF_SIZE is defined as 256.
     char errbuff[PCAP_ERRBUF_SIZE];
+
+    memset(errbuff, 0, PCAP_ERRBUF_SIZE);
  
     //Open the saved captured file and store result in pointer to pcap_t
     pcap_t *pcap = pcap_open_offline(file, errbuff);
  
+    if (pcap == NULL)
+    {
+        printf("[%s]pcap_open_offline failed: %s\n", __FILE__, errbuff);
+        return;
+    }
     //Start reading packets one by one 
     while (1)
     {
@@ -111,4 +118,5 @@ void parser(char *file)
             
         }
     }
+    return;
 }
