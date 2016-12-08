@@ -97,17 +97,22 @@ void parser(char *file)
     //Start reading packets one by one 
     while (1)
     {
-	val = pcap_next_ex(pcap, &header, &data);
+        val = pcap_next_ex(pcap, &header, &data);
         if(val < 0) break;
-        
+
         ethernet = (ether*)(data);
         if(ethernet->type == 8) // TCP/IP
         {
             curtime = header->ts.tv_sec;
 
-            //Point to the IP header i.e. 14 bytes(Size of ethernet header) from the start 
+            //Point to the IP header i.e. 14 bytes(Size of ethernet header) from the start
             ip = (IP*)(data + ETHER_HEADERSIZE);
-            ipheadlen = (ip->headlen & 0x0f)*4; 
+            if((unsigned int)(ip->protocol) != 6)
+            {
+                printf("not tcp protocol\n");
+                continue;
+            }
+            ipheadlen = (ip->headlen & 0x0f)*4;
 
             //Point to the TCP header as explained in IP
             tcp = (TCP*)(data + ETHER_HEADERSIZE + ipheadlen);
