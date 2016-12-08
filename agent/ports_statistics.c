@@ -109,7 +109,7 @@ void parser(char *file)
             ip = (IP*)(data + ETHER_HEADERSIZE);
             if((unsigned int)(ip->protocol) != 6)
             {
-                printf("not tcp protocol\n");
+                //printf("not tcp protocol\n");
                 continue;
             }
             ipheadlen = (ip->headlen & 0x0f)*4;
