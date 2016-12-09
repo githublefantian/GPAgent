@@ -2,11 +2,12 @@
 import pickle
 import os
 import sys
-import time
 
-from agentlog import Cmy_logger
 from cmdmacro import *
 import img_parse
+
+from agentlog import mergelog
+log = mergelog
 
 
 #倒序排序
@@ -75,33 +76,12 @@ def merge_dump_files(dump_file=''):
 
 
 if __name__ == "__main__":
-    logd, resultd, tmppcapd = ('', '', '')
-    with open(DEFAULT_ENV, 'r') as envf:
-        for line in envf.readlines():
-            if line.startswith('LOG_DIR='):
-                logd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
-            elif line.startswith('RESULT_DIR='):
-                resultd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
-            elif line.startswith('TMPPCAP_DIR='):
-                tmppcapd=line.replace('#', '=').split('=')[1].strip(' "\'\n')
-            elif line.startswith('SPLITOVERLAP='):
-                SPLIT_OVERLAP=line.replace('#', '=').split('=')[1].strip(' "\'\n')
-            else:
-                pass
-
-    if logd == '' or resultd == '' or tmppcapd == '':
-        print("[ERROR] Read parameters from agent.env error!")
-    else:
-        logd += '/'
-        resultd += '/'
-        tmppcapd += '/'
-
-    log = Cmy_logger(logname=(logd + 'img_parse.log'), logger="img_parse_merge").getlog()
+    resultd, tmppcapd = (RESULTD, TMPPCAPD)
     log.info('start %s process!' % sys.argv[0])
     pcap_file = ''
     argc = len(sys.argv)
     if argc != 2:
-        log.error("Required parameter missiong...")
+        log.error("Required parameter missing...")
         log.info("Example: %s pcapfile.pcap" % sys.argv[0])
         exit(1)
     else:

@@ -17,6 +17,9 @@ except ImportError:
 
 from cmdmacro import *
 
+from agentlog import imagelog
+log = imagelog
+
 PADDING = 80
 
 
@@ -225,30 +228,9 @@ def p_statistic_info(fw, img_filter_result):
                                                               response_err - ok_error))
     return
 
-
 if __name__ == '__main__':
     # Read parameters from agent.env
-    logd, resultd, tmppcapd = ('', '', '')
-    with open(DEFAULT_ENV, 'r') as envf:
-        for line in envf.readlines():
-            if line.startswith('LOG_DIR='):
-                logd = line.replace('#', '=').split('=')[1].strip(' "\'\n')
-            elif line.startswith('RESULT_DIR='):
-                resultd = line.replace('#', '=').split('=')[1].strip(' "\'\n')
-            elif line.startswith('TMPPCAP_DIR='):
-                tmppcapd = line.replace('#', '=').split('=')[1].strip(' "\'\n')
-            else:
-                pass
-
-    if logd == '' or resultd == '' or tmppcapd == '':
-        print("[ERROR] Read parameters from agent.env error!")
-    else:
-        logd += '/'
-        resultd += '/'
-        tmppcapd += '/'
-
-    from agentlog import Cmy_logger
-    log = Cmy_logger(logname=(logd + 'img_parse.log'), logger="img_parse").getlog()
+    resultd, tmppcapd = (RESULTD, TMPPCAPD)
     log.info('start %s process!' % sys.argv[0])
     pcap_file = ''
     argc = len(sys.argv)

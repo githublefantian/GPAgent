@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from cmdmacro import *
 import sysinfo
+from agentlog import agentlog
 
 def getsysinfo(type):
     result = {}
@@ -17,7 +18,7 @@ def getsysinfo(type):
     elif type == NICKEYRealTime:
         result = sysinfo.getNICRealTimeInfo()
     else:
-        print 'error! getsysinfo:', type
+        agentlog.error('error! getsysinfo:', type)
 
     return result
 
@@ -28,19 +29,19 @@ def getqueryinfo(type, para):
     elif type == NICKEYRealTime:
         result = sysinfo.getNICRealTimeInfo(para[T_VALUE].split('#'))
     else:
-        print 'error! getqueryinfo:', type
+        agentlog.info('error! getqueryinfo:', type)
 
     return result
 
 def parsestr(str=''):
     paradic = {}
     if len(str) <= 0:
-        print('len(str) error!')
+        agentlog.error('len(str) error!')
     content = str.split('&')
     for i in content:
         item = i.split('=')
         if len(item) != 2:
-            print('parsestr: len(item) != 2')
+            agentlog.error('parsestr: len(item) != 2')
             break
         paradic[item[0].strip()] = item[1].strip()
 
@@ -48,17 +49,21 @@ def parsestr(str=''):
 
 def mainbody(data):
     ret = {}
-    if (data is not None) and (data != ''):
-        para = parsestr(data)
-        if para[T_TYPE] == TT_INFO:
-            ret = getsysinfo(para[T_KEY])
-            pass
-        elif para[T_TYPE] == TT_REQ:
-            ret = getqueryinfo(para[T_KEY], para)
+    agentlog.info('Received post data: %s' % data)
+    try:
+        if (data is not None) and (data != ''):
+            para = parsestr(data)
+            if para[T_TYPE] == TT_INFO:
+                ret = getsysinfo(para[T_KEY])
+                pass
+            elif para[T_TYPE] == TT_REQ:
+                ret = getqueryinfo(para[T_KEY], para)
+            else:
+                agentlog.error('request type error:', para[T_TYPE])
         else:
-            print 'request type error:', para[T_TYPE]
-    else:
-        print 'request cmd is empty'
+            agentlog.error('request cmd is empty')
+    except Exception, e:
+        agentlog.error(e)
     return ret
 
 if __name__ == "__main__":

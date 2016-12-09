@@ -2,6 +2,7 @@
 
 import logging
 import logging.handlers
+from cmdmacro import *
 
 class Cmy_logger(object):
 
@@ -26,3 +27,7 @@ class Cmy_logger(object):
 
     def getlog(self):
         return self.logger
+
+agentlog = Cmy_logger(logname=(LOGD + 'agent.log'), logger="agent").getlog()
+imagelog = Cmy_logger(logname=(LOGD + 'image.log'), logger="image").getlog()
+mergelog = Cmy_logger(logname=(LOGD + 'image.log'), logger="merge").getlog()

@@ -27,3 +27,27 @@ NO_NO_RESPONSE = 0          # 没有响应
 NO_NORMAL_RESPONSE = 1      # 正常响应
 NO_CODE_ERROR_RESPONSE = 2  # 状态码返回错误
 NO_CT_ERROR_RESPONSE = 3    # content-type 类型错误(状态码200)
+
+# 读取配置文件参数
+LOGD = ''
+RESULTD = ''
+TMPPCAPD = ''
+with open(DEFAULT_ENV, 'r') as envf:
+    for line in envf.readlines():
+        if line.startswith('LOG_DIR='):
+            LOGD=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('RESULT_DIR='):
+            RESULTD=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('TMPPCAP_DIR='):
+            TMPPCAPD=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('SPLITOVERLAP='):
+            SPLIT_OVERLAP=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        else:
+            pass
+
+if LOGD == '' or RESULTD == '' or TMPPCAPD == '':
+    print("[ERROR] Read parameters from agent.env error!")
+else:
+    LOGD += '/'
+    RESULTD += '/'
+    TMPPCAPD += '/'

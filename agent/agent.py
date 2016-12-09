@@ -1,65 +1,54 @@
-# -*- coding: utf-8 -*-
-import socket
-import threading
+#!/usr/bin/env python
+"""
+Very simple HTTP server in python.
+Usage:
+    ./agent.py [<port>]
+Send a GET request::
+    curl http://localhost
+Send a HEAD request::
+    curl -I http://localhost
+Send a POST request::
+    curl -d "foo=bar&bin=baz" http://localhost
+"""
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import json
 import cmdhandler
 
-LISTEN_PORT = 8080
-HOST_IP = '10.10.88.173'
-BUFSIZE = 1024
+from agentlog import agentlog
 
-def linkhandler(sock, addr):
-    print('Accept new connection from %s:%s' % addr)
-    #sock.send('Welcome!')
-    while True:
-        data = sock.recv(BUFSIZE)
-        if data == 'exit' or not data:
-            break
+class S(BaseHTTPRequestHandler):
+    def _set_headers(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_GET(self):
+        self._set_headers()
+        self.wfile.write("<html><body><h1>My name is onephone!</h1></body></html>")
+
+    def do_HEAD(self):
+        self._set_headers()
+
+    def do_POST(self):
+        self._set_headers()
+        length = self.headers.getheaders('content-length')
+        data = self.rfile.read(int(length[0]))
         result = cmdhandler.mainbody(data)
         if result == {}:
-            print('result is {}')
-            sock.send(json.dumps({"code": "error"}))
+            agentlog.warning('do_POST result is {}')
         else:
-            sock.send(json.dumps(result))
-    sock.close()
-    print ('Connection from %s %s closed.' % addr)
+            self.wfile.write(json.dumps(result))
 
-if __name__ == '__main__':
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((HOST_IP, LISTEN_PORT))
-        s.listen(5)
-    except:
-        pass
-    while True:
-        print('waiting for connection...')
-        sock, addr = s.accept()
-        print('...connected from:{}'.format(addr))
-        t = threading.Thread(target=linkhandler, args=(sock, addr))
-        t.start()
+def run(server_class=HTTPServer, handler_class=S, port=80):
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    agentlog.info('Starting httpd...')
+    httpd.serve_forever()
 
-'''
-if __name__ == '__main__':
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((HOST_IP, LISTEN_PORT))
-        s.listen(1)
-    except:
-        pass
-    while True:
-        print('waiting for connection...')
-        sock, addr = s.accept()
-        print('...connected from:{}'.format(addr))
-        while True:
-            data = sock.recv(BUFSIZE)
-            if data == 'exit' or not data:
-                break
-            result = cmdhandler.mainbody(data)
-            if result == {}:
-                print('result is {}')
-                sock.send(json.dumps({"code": "error"}))
-            else:
-                sock.send(json.dumps(result))
-        sock.close()
-        print ('Connection from %s %s closed.' % addr)
-'''
+if __name__ == "__main__":
+    from sys import argv
+
+    if len(argv) == 2:
+        run(port=int(argv[1]))
+    else:
+        run()
