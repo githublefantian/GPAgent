@@ -27,6 +27,7 @@ function print_usage() {
 
 function myexit(){
     echo "[$0]stop all relevant program!"
+    killall ports_statistics 2> /dev/null
     for fn in ${filelist}; do
         basefn=`basename ${fn}`
         echo "[$0] ps aux | grep \"${basefn%.*}\" | grep -v $$ | grep -v grep | gawk '{ print \$2 }' | xargs kill -9"
@@ -68,6 +69,8 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+# 日志输出重定向
+exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
 
 # filt the data packets
 split_files=""
@@ -76,9 +79,12 @@ for input in ${filelist}; do
     input_basename=`basename ${input}`
 
     # 统计端口信息
+    echo "[$0]ports_statistics ......"
     output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_PORT}"
     starttime=$(date +%s)
-    ${AGENT_DIR}/ports_statistics ${input} ${output} ${PORTS_PERIOD}
+    ${AGENT_DIR}/ports_statistics ${input} ${output} ${PORTS_PERIOD} &
+    echo "[$0]ports_statistics ......wait......"
+    wait
     if [ $? -ne 0 ];then
         echo "[ERROR] ports_statistics ${input} error!!"
         rm -rf ${output}
@@ -89,9 +95,12 @@ for input in ${filelist}; do
     fi
 
     # 过滤数据包
+    echo "[$0]tcpdump filter ......"
     output="${TMPPCAP_DIR}/${input_basename%.*}${SUFFIX_IMG}"
     starttime=$(date +%s)
-    tcpdump -Z root -r ${input} ${FILTER} -w ${output}
+    tcpdump -Z root -r ${input} ${FILTER} -w ${output} &
+    echo "[$0]tcpdump filter ......wait......"
+    wait
     if [ $? -ne 0 ];then
         echo "[ERROR] tcpdump ${input} error!!"
         rm -rf ${output}
@@ -132,8 +141,10 @@ for input in ${filelist}; do
             mergeinfile=${output}split${splitout}
             mergeoutfile=${output}_${splitout}
             echo " [$0] tcpdump -Z root -r ${splitinfile} \"${RES_FILTER}\" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}"
-            tcpdump -Z root -r ${splitinfile} "${RES_FILTER}" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile}
-            mergecap -F pcap -w ${mergeoutfile} ${mergeinfile} tmp.pcap && rm -rf tmp.pcap
+            tcpdump -Z root -r ${splitinfile} "${RES_FILTER}" -w tmp.pcap -c ${SPLITOVERLAP} && rm -rf ${splitinfile} &
+            wait
+            mergecap -F pcap -w ${mergeoutfile} ${mergeinfile} tmp.pcap && rm -rf tmp.pcap &
+            wait
             let index--
             [ $index -eq 0 ] && rm -rf ${output}split0 && break
         done
