@@ -77,21 +77,21 @@ int main(int argc, char *argv[])
 
     if(file == NULL || wfile == NULL) {
         printf("[%s]main parameters error!\n", __FILE__);
-        return ret;
+        return 1;
     }
     wf = fopen(wfile, "w");
     if(wf == NULL) {
         printf("[%s]Open %s failed!\n", __FILE__, wfile);
-        return ret;
+        return 1;
     } else {
         ret = parser(file, wf, period);
         if(ret == 0) {
             printf("[%s] parser failed!\n", __FILE__);
-            return ret;
+            return 1;
         }
     }
 
-    return ret;
+    return 0;
 } 
 
 // return the END TIME
@@ -135,7 +135,7 @@ unsigned long parser(char *file, FILE* wf, unsigned int period)
     while(1) {
         val = pcap_next_ex(pcap, &header, &data);
         if(val < 0) {
-                len = sprintf(wfbuffer, "%lu,%lu,%lu,%lu,%lu\n", pretime, counter[0], counter[1], counter[2], counter[3]);
+                len = sprintf(wfbuffer, "%lu,%lu,%lu,%lu,%lu\n", curtime, counter[0], counter[1], counter[2], counter[3]);
                 len = fwrite(wfbuffer, sizeof(char), len, wf);
                 len = sprintf(wfbuffer,"\nEND_TIME,%lu\n", curtime);
                 fwrite(wfbuffer, sizeof(char), len, wf);

@@ -11,7 +11,8 @@ ERROR_PARA=1
 ERROR_TCPDUMP=2
 ABNORMAL_EXIT=3
 
-SUFFIX="_img.pcap"
+SUFFIX_IMG="_img.pcap"
+SUFFIX_PORT="_ports_result.csv"
 
 function print_usage() {
     usage="
@@ -73,7 +74,22 @@ split_files=""
 begintime=$(date +%s)
 for input in ${filelist}; do
     input_basename=`basename ${input}`
-    output="${TMPPCAP_DIR}/${input_basename%.*}${SUFFIX}"
+
+    # 统计端口信息
+    output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_PORT}"
+    starttime=$(date +%s)
+    ${AGENT_DIR}/ports_statistics ${input} ${output} ${PORTS_PERIOD}
+    if [ $? -ne 0 ];then
+        echo "[ERROR] ports_statistics ${input} error!!"
+        rm -rf ${output}
+        exit ${ERROR_TCPDUMP}
+    else
+        endtime=$(date +%s)
+        echo "[$0] port statistic deal with \"${input}\" success and costs $(( $endtime - $starttime )) seconds"
+    fi
+
+    # 过滤数据包
+    output="${TMPPCAP_DIR}/${input_basename%.*}${SUFFIX_IMG}"
     starttime=$(date +%s)
     tcpdump -Z root -r ${input} ${FILTER} -w ${output}
     if [ $? -ne 0 ];then
