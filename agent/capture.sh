@@ -1,20 +1,9 @@
 #!/usr/bin/env bash
+source /root/agent/agent.env
 
 # 1:HUP 2:INT 3:QUIT 15:TERM
 trap '' HUP
 trap 'myexit' INT QUIT TERM
-
-defaultprefix=""                        # 默认前缀,如228_
-defaultnics="p2p1 p2p2 p2p3"          # 默认抓包网卡
-defaultlogname="capture.log"          # 默认日志文件
-defaultdir="/backup/"                 # 默认抓包文件存放目录
-defaulttmp="/backup/tmp/"             # 默认临时目录
-defaultlog="/backup/log/"             # 默认日志目录
-defaultpcaptime=86400                 # 默认抓包24小时，24*60*60 秒
-
-if [ ! -d ${defaultdir} ]; then mkdir ${defaultdir}; fi
-if [ ! -d ${defaulttmp} ]; then mkdir ${defaulttmp}; fi
-if [ ! -d ${defaultlog} ]; then mkdir ${defaultlog}; fi
 
 usage="
 Usage:\n
@@ -73,7 +62,7 @@ done
 if [ $# -eq 1 ];then 
   period=$1;
 else
-  period=${dt:-"${defaultpcaptime}"}
+  period=${dt:-"${DEFAULTPCAPTIME}"}
 fi
 
 if [ ${#st} -eq 8 ]; then
@@ -85,10 +74,10 @@ else
   starttime=${st:-`date +%s`}
 fi
 
-nics=${ni:-"${defaultnics}"} #ni未定义或值为空时，使用默认网卡信息
+nics=${ni:-"${DEFAULTNICS}"} #ni未定义或值为空时，使用默认网卡信息
 endtime=${et:-$(( ${starttime} + ${period} ))}
 #echo $endtime
-out_dir=${od:-"${defaultdir}"}
+out_dir=${od:-"${DEFAULTDIR}"}
 if [ "x${starttime}" == "x" ] || [ "x${endtime}" == "x" ] || \
    [ "x${nics}" == "x" ] || [ ${starttime} -ge ${endtime} ]; then
   echo "parameters error!"
@@ -97,11 +86,11 @@ if [ "x${starttime}" == "x" ] || [ "x${endtime}" == "x" ] || \
 fi
 
 # 日志输出重定向
-exec >> ${defaultlog}${defaultlogname} 2>> ${defaultlog}${defaultlogname}
+exec >> ${DEFAULTLOG}${DEFAULTLOGNAME} 2>> ${DEFAULTLOG}${DEFAULTLOGNAME}
 echo "nics:${nics}, starttime:${starttime}, endtime:${endtime}, periodtime:${period,} output_dir:${out_dir}"
 
 # 脚本启动处理
-PIDDir=${defaulttmp}$$/
+PIDDir=${DEFAULTPIDDIR}$$/
 rm -rf ${PIDDir} && mkdir -p ${PIDDir} # 创建进程目录
 currenttime=`date`
 timestamp=`date +%s`
@@ -134,7 +123,7 @@ function myexit(){
 
 function startprocess(){
   fn_time=`date +%Y%m%d_%H%M%S`
-  filename=${defaultprefix}${fn_time}_$1
+  filename=${DEFAULTPREFIX}${fn_time}_$1
   echo "startprocess: ${filename}.pcap"
   netsniff-ng --in $1 --out ${out_dir}${filename}.pcap --prio-high --verbose --silent --ring-size 500MiB > ${PIDDir}${filename} &
 }
