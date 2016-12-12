@@ -125,7 +125,8 @@ function startprocess(){
   fn_time=`date +%Y%m%d_%H%M%S`
   filename=${DEFAULTPREFIX}${fn_time}_$1
   echo "startprocess: ${filename}.pcap"
-  netsniff-ng --in $1 --out ${out_dir}${filename}.pcap --prio-high --verbose --silent --ring-size 500MiB > ${PIDDir}${filename} &
+  (netsniff-ng --in $1 --out ${out_dir}${filename}.pcap --prio-high --verbose --silent --ring-size 500MiB > ${PIDDir}${filename} \
+  && md5sum ${out_dir}${filename}.pcap > ${out_dir}${filename}.md5) &
 }
 
 
