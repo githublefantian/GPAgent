@@ -134,12 +134,20 @@ unsigned long parser(char *file, FILE* wf, unsigned int period)
     //Start reading packets one by one
     while(1) {
         val = pcap_next_ex(pcap, &header, &data);
-        if(val < 0) {
+        if(val == -2) {
                 len = sprintf(wfbuffer, "%lu,%lu,%lu,%lu,%lu\n", curtime, counter[0], counter[1], counter[2], counter[3]);
                 len = fwrite(wfbuffer, sizeof(char), len, wf);
                 len = sprintf(wfbuffer,"\nEND_TIME,%lu\n", curtime);
                 fwrite(wfbuffer, sizeof(char), len, wf);
             break;
+        } else if(val == -1) {
+            printf("[%s] an error occurred while reading the packet\n", __FILE__);
+            break;
+        } else if(val == 0) {
+            printf("[%s] packets are being read from a live capture and the timeout expired\n", __FILE__);
+            break;
+        } else {
+
         }
 
         curtime = header->ts.tv_sec;

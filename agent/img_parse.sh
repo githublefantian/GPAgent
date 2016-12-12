@@ -84,9 +84,14 @@ for input in ${filelist}; do
     output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_IMG_RESULT}"
     echo "[$0] capinfos ${input} -T -m > ${output} ......"
     capinfos ${input} -T -m > ${output} &
-    echo "[$0] md5sum ${input} | cut -d ' ' -f 1 ......"
-    filemd5=`md5sum ${input} | cut -d ' ' -f 1`
-    echo -e "\nMD5sum,${filemd5}\n\n" >> ${output}
+    if [ -f ${input//.pcap/.md5} ];then
+        echo "[$0] cat ${input//.pcap/.md5} | cut -d ' ' -f 1 ......"
+        cat ${input//.pcap/.md5} | cut -d ' ' -f 1 >> ${output}
+    else
+        echo "[$0] md5sum ${input} | cut -d ' ' -f 1 ......"
+        filemd5=`md5sum ${input} | cut -d ' ' -f 1`
+        echo -e "\nMD5sum,${filemd5}\n\n" >> ${output}
+    fi
     wait
 
     # 统计端口信息
