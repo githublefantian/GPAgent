@@ -2,5 +2,7 @@
 source ./agent.env
 
 rm -rf ${TMPPCAP_DIR}/*
-rm  ${RESULT_DIR}/*
-rm  ${LOG_DIR}/*
+rm -rf ${RESULT_DIR}/*
+rm -rf  ${LOG_DIR}/*
+rm -rf  ${PCAP_DIR}/*
+

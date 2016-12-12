@@ -42,10 +42,14 @@ def getPIDinfo(pid, type=""):
     if not isinstance(pid, int):
         return (False, "PID type error")
     if psutil.pid_exists(pid):
-        if type == CAPTURE_STATUS:
+        if type == TT_PCAP:
             (status, output) = commands.getstatusoutput('ps aux | grep capture.sh | grep -v grep')
-        elif type == PARSE_STATUS:
+        elif type == TT_PARSE:
             (status, output) = commands.getstatusoutput('ps aux | grep img_parse.sh | grep -v grep')
+        elif type == TT_TRANS:
+            (status, output) = commands.getstatusoutput('ps aux | grep file_transfer.sh | grep -v grep')
+        elif type == TT_MD5:
+            (status, output) = commands.getstatusoutput('ps aux | grep md5_generate.sh | grep -v grep')
         else:
             pass
         if status != 0:
@@ -58,87 +62,66 @@ def getPIDinfo(pid, type=""):
         return True, False
 
 
-
-
-def exec_parse_cmd(key, parad):
-    if key == PARSE_STATUS:
-        if PARSE_PID in parad:
-            ret, info = getPIDinfo(int(parad[PARSE_PID]), key)
-            if not ret:
-                raise AgentError(PARSE_STATUS + ": " + info)
-            else:
-                if info:
-                    return {STATUS_KEY: STATUS_RUN}
-                else:
-                    return {STATUS_KEY: STATUS_END}
-        else:
-            return AgentError(PARSE_STATUS + ' : lack of PARSE PID info. ')
-    elif key == PARSE_STOP:
-        if PARSE_PID not in parad:
-            raise AgentError(PARSE_STOP + " : lack of PARSE PID info.")
-        else:
-            ret, info = stopprocess(int(parad[PARSE_PID]))
-            if not ret:
-                raise AgentError(PARSE_STOP + " : " + info)
-            else:
-                return {STATUS_KEY: STATUS_SUCCESS}
-    elif key == PARSE_START:
-        if T_VALUE not in parad:
-            cmd = AGENTD + "img_parse.sh -d"
-        else:
-            pass
-        ret, pid = startcmd(cmd)
-        if not ret:
-            raise AgentError(PARSE_START + " : failed!")
-        else:
-            return {PARSE_PID: str(pid)}
-    else:
-        raise AgentError(key + ": error type")
-        pass
-
-
-def exec_capture_cmd(key, parad):
-    if key == CAPTURE_STATUS:
-        if CAPTURE_PID in parad:
-            ret, info = getPIDinfo(int(parad[CAPTURE_PID]), key)
-            if not ret:
-                raise AgentError(CAPTURE_STATUS + " : " + info)
-            else:
-                if info:
-                    return {STATUS_KEY: STATUS_RUN}
-                else:
-                    return {STATUS_KEY: STATUS_END}
-        else:
-            return AgentError(CAPTURE_STATUS + 'lack of CAPTURE PID info. ')
-    elif key == CAPTURE_STOP:
-        if CAPTURE_PID not in parad:
-            raise AgentError(CAPTURE_STOP + ": lack of CAPTURE PID info.")
-        else:
-            ret, info = stopprocess(int(parad[CAPTURE_PID]))
-            if not ret:
-                raise AgentError(CAPTURE_STOP + info)
-            else:
-                return {STATUS_KEY: STATUS_SUCCESS}
-    elif key == CAPTURE_START:
+def get_exec_cmd(type, parad):
+    cmd = ''
+    if type == TT_PCAP:
         if T_VALUE not in parad:
             cmd = AGENTD + 'capture.sh'
         else:
             nics = parad[T_VALUE].replace('#', ',')
             cmd = AGENTD + 'capture.sh' + ' -n ' + nics
-            pass
-        ret, pid = startcmd(cmd)
-        if not ret:
-            raise AgentError(CAPTURE_START + "failed!")
+    elif type == TT_PARSE:
+        if T_VALUE not in parad:
+            cmd = AGENTD + "img_parse.sh -d"
         else:
-            return {CAPTURE_PID: str(pid)}
+            pass
+    elif type == TT_TRANS:
+        if T_VALUE not in parad:
+            cmd = AGENTD + "file_transfer.sh"
+        else:
+            pass
+    elif type == TT_MD5:
+        if T_VALUE not in parad:
+            cmd = AGENTD + "md5_generate.sh"
+        else:
+            pass
     else:
-        raise AgentError(key + ": error type")
         pass
 
+    return cmd
 
-def exec_transfer_cmd():
-    pass
 
+def exec_process(type, key, parad):
+    if key == PROCESS_STATUS:
+        if PROCESS_PID in parad:
+            ret, info = getPIDinfo(int(parad[PROCESS_PID]), type)
+            if not ret:
+                raise AgentError(PROCESS_STATUS + ": " + info)
+            else:
+                if info:
+                    return {STATUS_KEY: STATUS_RUN}
+                else:
+                    return {STATUS_KEY: STATUS_END}
+        else:
+            return AgentError('%s-%s lack of PID' % (type, key))
+    elif key == PROCESS_STOP:
+        if PROCESS_PID not in parad:
+            return AgentError('%s-%s lack of PID' % (type, key))
+        else:
+            ret, info = stopprocess(int(parad[PROCESS_PID]))
+            if not ret:
+                raise AgentError(PROCESS_STOP + " : " + info)
+            else:
+                return {STATUS_KEY: STATUS_SUCCESS}
+    elif key == PROCESS_START:
+        cmd = get_exec_cmd(type, parad)
+        ret, pid = startcmd(cmd)
+        if not ret:
+            raise AgentError("%s-%s : failed!" % (type, key))
+        else:
+            return {PROCESS_PID: str(pid)}
+    else:
+        raise AgentError("%s-%s error type!" % (type, key))
 
 
 if __name__ == "__main__":
@@ -146,30 +129,48 @@ if __name__ == "__main__":
 
     # 抓包
     print "capture start"
-    ret = exec_capture_cmd("capture-start", {"value": "p5p2#em1"})
+    ret = exec_process("pcap", "start", {"value": "p5p2#em1"})
+    #ret = exec_capture_cmd("capture-start", {"value": "p5p2#em1"})
     print ret
     pid = ret["pid"]
     sleep(2)
-    ret = exec_capture_cmd("capture-status", {"pid": pid})
+    ret = exec_process("pcap", "status", {"pid": pid})
+    #ret = exec_capture_cmd("capture-status", {"pid": pid})
     print ret
     sleep(5)
-    ret = exec_capture_cmd("capture-stop", {"pid": pid})
+    ret = exec_process("pcap", "stop", {"pid": pid})
+    #ret = exec_capture_cmd("capture-stop", {"pid": pid})
     print ret
     while(1):
-        ret = exec_capture_cmd("capture-status", {"pid": pid})
+        ret = exec_process("pcap", "status", {"pid": pid})
+        #ret = exec_capture_cmd("capture-status", {"pid": pid})
         if ret["status"] == "end":
             break
         print ret
         sleep(2)
 
+    # md5校验
+    print "md5 start"
+    ret = exec_process("md5", "start", {})
+    while(1):
+        ret = exec_process("md5", "status", {'pid': pid})
+        #ret = exec_parse_cmd("analyse-status", {"pid": pid})
+        if ret["status"] == "end":
+            break
+        sleep(2)
+        print ret
+    print "md5 end!"
+
     # 解析
     sleep(2)
     print "analyse start"
-    ret = exec_parse_cmd("analyse-start", {})
+    ret = exec_process("parse", "start", {})
+    #ret = exec_parse_cmd("analyse-start", {})
     print ret
     pid = ret["pid"]
     while(1):
-        ret = exec_parse_cmd("analyse-status", {"pid": pid})
+        ret = exec_process("parse", "status", {'pid': pid})
+        #ret = exec_parse_cmd("analyse-status", {"pid": pid})
         if ret["status"] == "end":
             break
         sleep(2)

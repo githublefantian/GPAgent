@@ -11,6 +11,8 @@ TT_INFO = 'info' # 无需请求参数
 TT_REQ = 'req' # 需要请求参数
 TT_PCAP = 'pcap' # 抓包/分析命令
 TT_PARSE = 'parse' # 抓包/分析命令
+TT_TRANS = 'trans' # 文件传输
+TT_MD5 = 'md5'  # 计算md5校验值
 
 T_KEY = 'key'
 CPUKEY = 'device-cpu'
@@ -28,18 +30,12 @@ STATUS_KEY = 'status'
 STATUS_RUN = 'running'
 STATUS_END = 'end'
 STATUS_SUCCESS = 'success'
+PROCESS_PID = 'pid'
 
-# 抓包参数
-CAPTURE_START = 'capture-start'
-CAPTURE_STATUS = 'capture-status'
-CAPTURE_STOP = 'capture-stop'
-CAPTURE_PID = 'pid'
-
-# 解析参数
-PARSE_START = 'analyse-start'
-PARSE_STATUS = 'analyse-status'
-PARSE_STOP = 'analyse-stop'
-PARSE_PID = 'pid'
+# 命令类型
+PROCESS_START = 'start'
+PROCESS_STATUS = 'status'
+PROCESS_STOP = 'stop'
 
 # 错误信息
 ERROR_INFO = 'error-info'
