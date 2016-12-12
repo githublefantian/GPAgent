@@ -12,7 +12,8 @@ ERROR_TCPDUMP=2
 ABNORMAL_EXIT=3
 
 SUFFIX_IMG="_img.pcap"
-SUFFIX_PORT="_ports_result.csv"
+SUFFIX_IMG_RESULT="_img_result.csv"
+SUFFIX_PORT_RESULT="_ports_result.csv"
 
 function print_usage() {
     usage="
@@ -78,9 +79,19 @@ begintime=$(date +%s)
 for input in ${filelist}; do
     input_basename=`basename ${input}`
 
+    # 统计pcap文件信息以及md5sum
+    echo "[$0] pcapinfos && md5sum......"
+    output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_IMG_RESULT}"
+    echo "[$0] capinfos ${input} -T -m > ${output} ......"
+    capinfos ${input} -T -m > ${output} &
+    echo "[$0] md5sum ${input} | cut -d ' ' -f 1 ......"
+    filemd5=`md5sum ${input} | cut -d ' ' -f 1`
+    echo -e "\nMD5sum,${filemd5}\n\n" >> ${output}
+    wait
+
     # 统计端口信息
     echo "[$0]ports_statistics ......"
-    output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_PORT}"
+    output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_PORT_RESULT}"
     starttime=$(date +%s)
     ${AGENT_DIR}/ports_statistics ${input} ${output} ${PORTS_PERIOD} &
     echo "[$0]ports_statistics ......wait......"

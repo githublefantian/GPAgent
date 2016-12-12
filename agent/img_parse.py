@@ -215,7 +215,7 @@ def p_statistic_info(fw, img_filter_result):
     response = real - len(no_response_dict)
     success = response - response_err
 
-    fw.write('ITEM,VALUE\n'
+    fw.write('IMAGE STATISTICS\n'
              'IMAGE REQUEST TOTAL,%d\n'
              'IMAGE REQUEST REAL TOTAL,%d\n'
              'IMAGE REQUEST SUCCESS TOTAL,%d\n'
@@ -260,7 +260,7 @@ if __name__ == '__main__':
     # 输出统计信息
     result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_result.csv')
     log.info('writing to %s start' % result_file)
-    with open(result_file, 'w') as fw:
+    with open(result_file, 'a') as fw:
         p_statistic_info(fw, result)
         fw.write('\n\n')
         p_img_no_reponse(fw, result[2])

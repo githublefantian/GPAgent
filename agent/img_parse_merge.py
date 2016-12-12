@@ -100,7 +100,7 @@ if __name__ == "__main__":
     # 输出统计信息
     result_file = resultd + os.path.basename(pcap_file).replace('.pcap', '_result.csv')
     log.info('writing to %s start' % result_file)
-    with open(result_file, 'w') as fw:
+    with open(result_file, 'a') as fw:
         img_parse.p_statistic_info(fw, result)
         fw.write('\n\n')
         img_parse.p_img_no_reponse(fw, result[2])
