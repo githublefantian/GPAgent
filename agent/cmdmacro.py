@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # request command
 # type=req&key=device-nic&value=p5p2#p5p1
 # type=info&key=device-nic
@@ -10,6 +9,8 @@ DEFAULT_ENV = '/root/agent/agent.env'
 T_TYPE = 'type'
 TT_INFO = 'info' # 无需请求参数
 TT_REQ = 'req' # 需要请求参数
+TT_PCAP = 'pcap' # 抓包/分析命令
+TT_PARSE = 'parse' # 抓包/分析命令
 
 T_KEY = 'key'
 CPUKEY = 'device-cpu'
@@ -20,6 +21,30 @@ NTPKEY = 'ntp-status'
 NICKEYRealTime = 'nic-traffic'
 
 T_VALUE = 'value' # 多个值则以#号分开，如： p5p1#p5p1
+
+
+# 进程状态
+STATUS_KEY = 'status'
+STATUS_RUN = 'running'
+STATUS_END = 'end'
+STATUS_SUCCESS = 'success'
+
+# 抓包参数
+CAPTURE_START = 'capture-start'
+CAPTURE_STATUS = 'capture-status'
+CAPTURE_STOP = 'capture-stop'
+CAPTURE_PID = 'pid'
+
+# 解析参数
+PARSE_START = 'analyse-start'
+PARSE_STATUS = 'analyse-status'
+PARSE_STOP = 'analyse-stop'
+PARSE_PID = 'pid'
+
+# 错误信息
+ERROR_INFO = 'error-info'
+
+
 
 
 # 验证码响应类型分类
@@ -35,19 +60,32 @@ TMPPCAPD = ''
 with open(DEFAULT_ENV, 'r') as envf:
     for line in envf.readlines():
         if line.startswith('LOG_DIR='):
-            LOGD=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+            LOGD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('RESULT_DIR='):
-            RESULTD=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+            RESULTD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('TMPPCAP_DIR='):
-            TMPPCAPD=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+            TMPPCAPD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('SPLITOVERLAP='):
-            SPLIT_OVERLAP=line.replace('#', '=').split('=')[1].strip(' "\'\n')
+            SPLIT_OVERLAP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('AGENT_DIR='):
+            AGENTD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('DEFAULTNICS='):
+            DEFAULT_NICS = line.replace('#', '=').split('=')[1].strip(' "\'\n').split(' ')  # list
         else:
             pass
 
-if LOGD == '' or RESULTD == '' or TMPPCAPD == '':
+if LOGD == '' or RESULTD == '' or TMPPCAPD == '' or AGENTD == '':
     print("[ERROR] Read parameters from agent.env error!")
 else:
     LOGD += '/'
     RESULTD += '/'
     TMPPCAPD += '/'
+    AGENTD += '/'
+
+class AgentError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+

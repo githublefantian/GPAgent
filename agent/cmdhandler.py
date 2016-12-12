@@ -2,6 +2,7 @@
 from cmdmacro import *
 import sysinfo
 from agentlog import agentlog
+import pcap
 
 def getsysinfo(type):
     result = {}
@@ -33,7 +34,11 @@ def getqueryinfo(type, para):
 
     return result
 
+
 def parsestr(str=''):
+    '''
+    将命令字符串解析成了字典类型,只针对=进行切割
+    '''
     paradic = {}
     if len(str) <= 0:
         agentlog.error('len(str) error!')
@@ -58,10 +63,17 @@ def mainbody(data):
                 pass
             elif para[T_TYPE] == TT_REQ:
                 ret = getqueryinfo(para[T_KEY], para)
+            elif para[T_TYPE] == TT_PCAP:
+                ret = pcap.exec_capture_cmd(para[T_KEY], para)
+            elif para[T_TYPE] == TT_PARSE:
+                ret = pcap.exec_parse_cmd(para[T_KEY], para)
             else:
-                agentlog.error('request type error:', para[T_TYPE])
+                agentlog.error('request type error: %s' % para[T_TYPE])
         else:
             agentlog.error('request cmd is empty')
+    except AgentError, e:
+        ret[ERROR_INFO] = e.value
+        agentlog.error(e)
     except Exception, e:
         agentlog.error(e)
     return ret

@@ -42,19 +42,23 @@ def getNTPStatus():
     else:
         return {NTPKEY: "off"}
 
-def getNICInfo(nics=[], controller_ip=''):
+def getNICInfo(niclist=[], controller_ip=''):
     '''
     {"networkcard": [{"ip:":"", "mac": "14:18:77:59:51:22", "name": "swf", "controller-ip": "169.254.204.46"}]}
     '''
     global g_niclist
     g_niclist = []
     nicinfo = psutil.net_if_addrs()
+
+    if len(niclist) == 0:
+        nics = DEFAULT_NICS
+    else:
+        nics = niclist
+
     for nic, addrs in nicinfo.items():
         ipaddr = ''
         macaddr = ''
-        if nic in ('lo', 'virbr0'):
-            continue
-        if len(nics) != 0 and (nic not in nics):
+        if nic not in nics:
             continue
         for addr in addrs:
             if addr.address == controller_ip:
@@ -73,7 +77,7 @@ def getNICInfo(nics=[], controller_ip=''):
 def getNICRealTimeInfo(nics=[], controller_ip=''):
     global g_niclist
     io_list = []
-    if g_niclist == []:
+    if len(g_niclist) == 0:
         getNICInfo(nics, controller_ip)
     io_counters = psutil.net_io_counters(pernic=True)
     for nic in g_niclist:

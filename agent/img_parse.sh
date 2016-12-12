@@ -43,7 +43,6 @@ function myexit(){
     exit ${ABNORMAL_EXIT}
 }
 
-
 filelist=""
 # parse parameters
 [ $# -eq 0 ] && print_usage && exit ${ERROR_PARA}
@@ -62,6 +61,13 @@ while [ $# -gt 0 ]; do
             done
             shift
             ;;
+        -d | --default)
+            shift
+            # 默认解析当天的数据包
+            datetime=`date +%Y%m%d`
+            filelist=`ls ${PCAP_DIR}/*${datetime}*.pcap`
+            # echo "[$0] ${filelist}"
+            ;;
         *)
             echo "Unknow argument: $1"
             print_usage
@@ -69,6 +75,7 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
 
 # 日志输出重定向
 exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
