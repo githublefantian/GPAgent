@@ -65,7 +65,7 @@ unsigned long parser(char *, FILE *, unsigned int);
 int main(int argc, char *argv[])
 {
     if(argc != 4) {
-        printf("[%s]parameters missing (4)\n", __FILE__);
+        printf("[%s]parameters missing (3)\n ./ports_statistics <infile> <outfile> <seconds>\n", __FILE__);
         return 1;
     }
     //File name is sent as an argument
