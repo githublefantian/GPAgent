@@ -39,7 +39,7 @@ def getMemInfo():
     return {MEMKEY: meminfo}
 
 
-def getDiskInfo(diskpath='/'):
+def getDiskInfo(diskpath=DEFAULT_DISKPATH):
     '''
     {"total": 300792410112, "used": 200032780288, "free": 100759629824, "percent": 66.5}
     '''
@@ -47,7 +47,7 @@ def getDiskInfo(diskpath='/'):
     diskinfo = psutil.disk_usage(diskpath)._asdict()
     return {DISKKEY: diskinfo}
 
-def getDiskFree(diskpath='/'):
+def getDiskFree(diskpath=DEFAULT_DISKPATH):
     return psutil.disk_usage(diskpath).free
 
 def getNTPStatus():
