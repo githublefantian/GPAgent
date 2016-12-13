@@ -74,7 +74,7 @@ def get_exec_cmd(type, parad):
             cmd = AGENTD + 'capture.sh' + ' -n ' + nics
     elif type == TT_PARSE:
         if T_VALUE not in parad:
-            cmd = AGENTD + "img_parse.sh -d"
+            cmd = AGENTD + "img_deal.sh 201611"
         else:
             pass
     elif type == TT_TRANS:
