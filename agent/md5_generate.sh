@@ -3,16 +3,13 @@ source /root/agent/agent.env
 
 # 1:HUP 2:INT 3:QUIT 15:TERM
 trap '' HUP
-trap 'myexit' INT QUIT TERM
-
-
-# 默认只计算当日的抓包文件
-datetime=`date +%Y%m%d`
-filelist=`ls ${PCAP_DIR}/*${datetime}*.pcap`
+# trap 'myexit' INT QUIT TERM
 
 
 # 日志输出重定向
-exec >> ${DEFAULTLOG}${DEFAULTLOGNAME} 2>> ${DEFAULTLOG}${DEFAULTLOGNAME}
+if [ ! $DEBUG == "yes" ]; then
+    exec >> ${LOG_DIR}/${MD5LOGNAME} 2>> ${LOG_DIR}/${MD5LOGNAME}
+fi
 
 # 有参数
 if [ "x$1" != "x" ]; then
@@ -20,6 +17,10 @@ if [ "x$1" != "x" ]; then
     for filename in ${filelist}; do
         [ ! -f ${filename} ] && echo " ${filename} is not a file or not exist!" && exit
     done
+else
+    # 默认只计算当日的抓包文件
+    datetime=`date +%Y%m%d`
+    filelist=`ls ${PCAP_DIR}/*${datetime}*.pcap`
 fi
 
 
