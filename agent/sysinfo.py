@@ -3,8 +3,23 @@ import psutil
 import commands
 import time
 from cmdmacro import *
+import file_manage
+from agentlog import agentlog
 
 g_niclist = []
+
+
+def getFilesInfo(para):
+    file_manage.parse_filesinfo_para(para)
+    print(FILEINFOKEY)
+    fileinfo = file_manage.managefiles(FILEINFOKEY, para[TRANS_SRC].split('#'), para[TRANS_FILTER].split('#'))
+    return {FILEINFOKEY: fileinfo}
+
+
+def removeFiles(para):
+    file_manage.parse_filesinfo_para(para)
+    fileinfo = file_manage.managefiles(FILEREMOVEKEY, para[TRANS_SRC].split('#'), para[TRANS_FILTER].split('#'))
+    return {FILEREMOVEKEY: fileinfo}
 
 def getCPUInfo(period=0.5):
     '''
@@ -80,6 +95,7 @@ def getNICRealTimeInfo(nics=[], controller_ip=''):
     if len(g_niclist) == 0:
         getNICInfo(nics, controller_ip)
     io_counters = psutil.net_io_counters(pernic=True)
+    #agentlog.debug(str(g_niclist))
     for nic in g_niclist:
         io = io_counters[nic['name']]
         io_item = {"name": nic['name'],
@@ -98,12 +114,14 @@ def getNICRealTimeInfo(nics=[], controller_ip=''):
 
 
 if __name__ == "__main__":
-    import json
-    print(json.dumps(getCPUInfo()))
-    print(json.dumps(getDiskInfo('/')))
-    print(json.dumps(getMemInfo()))
+    print(getCPUInfo())
+    print(getDiskInfo('/'))
+    print(getDiskInfo('/boot/'))
+    print(getMemInfo())
     print(getNICInfo())
     print(getNTPStatus())
     print(getNICRealTimeInfo())
     print(getDiskFree())
+    print(getFilesInfo({"value": "pcap"}))
+    print(removeFiles({"value": "pcap", "filter": "copy"}))
 
