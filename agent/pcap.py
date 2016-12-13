@@ -5,6 +5,7 @@ from cmdmacro import *
 from agentlog import agentlog
 import commands
 import file_manage
+import time
 
 
 
@@ -74,8 +75,10 @@ def get_exec_cmd(type, parad):
             cmd = AGENTD + 'capture.sh' + ' -n ' + nics
     elif type == TT_PARSE:
         if T_VALUE not in parad:
-            cmd = AGENTD + "img_deal.sh 201611"
+            todaydate = time.strftime('%Y%m%d', time.localtime(time.time()))
+            cmd = AGENTD + "img_deal.sh " + todaydate
         else:
+            cmd = AGENTD + "img_deal.sh " + parad[T_VALUE]
             pass
     elif type == TT_TRANS:
         file_manage.parse_filesinfo_para(parad)

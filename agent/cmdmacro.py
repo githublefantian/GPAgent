@@ -98,9 +98,9 @@ with open(DEFAULT_ENV, 'r') as envf:
         elif line.startswith('DEFAULTNICS='):
             DEFAULT_NICS = line.replace('#', '=').split('=')[1].strip(' "\'\n').split(' ')  # list
         elif line.startswith('DEFAULT_DISKPATH='):
-            DEFAULT_DISKPATH = line.replace('#', '=').split('=')[1].strip(' "\'\n').split(' ')  # list
+            DEFAULT_DISKPATH = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('TRANSFERTMP='):
-            TRANSFERTMP = line.replace('#', '=').split('=')[1].strip(' "\'\n')  # list
+            TRANSFERTMP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         else:
             pass
 
