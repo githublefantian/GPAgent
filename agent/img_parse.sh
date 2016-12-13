@@ -18,9 +18,13 @@ SUFFIX_PORT_RESULT="_ports_result.csv"
 function print_usage() {
     usage="
     Usage:\n
-        $0 -f <pcap/pcapng filename>\n
+        $0 [-f|--file] <pcap/pcapng filename>\n
+        $0 [-t|--time] <date>\n
+        $0 [-d|--default] 默认解析当天的数据\n
     Example:\n
         $0 -f file1,file2\n
+        $0 -t 201602\n
+        $0 -t 20160222\n
     "
     echo -e $usage
 }
@@ -62,12 +66,19 @@ while [ $# -gt 0 ]; do
             done
             shift
             ;;
+        -t | --time)
+            shift
+            [ "x$1" == "x" ] && echo "Please input the date time!" && exit ${ERROR_PARA}
+            filelist=`ls ${PCAP_DIR}/*$1*.pcap`
+            [ "${filelist}x" == "x" ] && echo "file is empty!" && exit ${ERROR_PARA}
+            shift
+            ;;
         -d | --default)
             shift
             # 默认解析当天的数据包
             datetime=`date +%Y%m%d`
             filelist=`ls ${PCAP_DIR}/*${datetime}*.pcap`
-            # echo "[$0] ${filelist}"
+            [ "${filelist}x" == "x" ] && echo "file is empty!" && exit ${ERROR_PARA}
             ;;
         *)
             echo "Unknow argument: $1"

@@ -215,7 +215,7 @@ def p_statistic_info(fw, img_filter_result):
     response = real - len(no_response_dict)
     success = response - response_err
 
-    fw.write('IMAGE STATISTICS\n'
+    fw.write('\nIMAGE STATISTICS\n'
              'IMAGE REQUEST TOTAL,%d\n'
              'IMAGE REQUEST REAL TOTAL,%d\n'
              'IMAGE REQUEST SUCCESS TOTAL,%d\n'
