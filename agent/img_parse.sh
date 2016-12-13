@@ -44,8 +44,7 @@ function myexit(){
     timestamp=`date +%s`
     echo "[$0]PID: $$, myexit!"
     echo -e "[$0]====script stop time:${currenttime} (${timestamp})===="
-    #exit ${ABNORMAL_EXIT}
-    exit
+    exit ${ABNORMAL_EXIT}
 }
 
 filelist=""
@@ -218,11 +217,16 @@ rm -rf ${output}_*
 echo "[$0] del ${output} dump-files"
 rm -rf ${output//.pcap/.dump}_*
 
+for fn in ${filelist}; do
+    basefn=`basename ${fn}`
+    echo "[$0] rm -rf ${TMPPCAP_DIR}/${basefn%.*}*"
+    rm -rf ${TMPPCAP_DIR}/${basefn%.*}*
+done
+
 finishtime=$(date +%s)
 echo "[$0] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in total"
 
 
-myexit
-#exit ${SUCCESS_OK}
+exit ${SUCCESS_OK}
 
 
