@@ -93,6 +93,8 @@ with open(DEFAULT_ENV, 'r') as envf:
             SPLIT_OVERLAP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('AGENT_DIR='):
             AGENTD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('DEFAULT_PORT='):
+            DEFAULT_PORT = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('DEFAULTNICS='):
             DEFAULT_NICS = line.replace('#', '=').split('=')[1].strip(' "\'\n').split(' ')  # list
         elif line.startswith('TRANSFERTMP='):
