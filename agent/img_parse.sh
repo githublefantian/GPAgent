@@ -104,6 +104,7 @@ for input in ${filelist}; do
     output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_IMG_RESULT}"
     echo "[$0] capinfos ${input} -T -m > ${output} ......"
     capinfos ${input} -T -m > ${output} &
+    wait
     if [ -f ${input//.pcap/.md5} ];then
         echo "[$0] cat ${input//.pcap/.md5} | cut -d ' ' -f 1 ......"
         cat ${input//.pcap/.md5} | cut -d ' ' -f 1 >> ${output}
@@ -112,15 +113,14 @@ for input in ${filelist}; do
         filemd5=`md5sum ${input} | cut -d ' ' -f 1`
         echo -e "\nMD5sum,${filemd5}\n\n" >> ${output}
     fi
-    wait
 
     # 统计端口信息
     echo "[$0]ports_statistics ......"
     output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_PORT_RESULT}"
     starttime=$(date +%s)
     ${AGENT_DIR}/ports_statistics ${input} ${output} ${PORTS_PERIOD} &
-    echo "[$0]ports_statistics ......wait......"
     wait
+    echo "[$0]ports_statistics ......wait......"
     if [ $? -ne 0 ];then
         echo "[ERROR] ports_statistics ${input} error!!"
         rm -rf ${output}
@@ -135,8 +135,8 @@ for input in ${filelist}; do
     output="${TMPPCAP_DIR}/${input_basename%.*}${SUFFIX_IMG}"
     starttime=$(date +%s)
     tcpdump -Z root -r ${input} ${FILTER} -w ${output} &
-    echo "[$0]tcpdump filter ......wait......"
     wait
+    echo "[$0]tcpdump filter ......wait......"
     if [ $? -ne 0 ];then
         echo "[ERROR] tcpdump ${input} error!!"
         rm -rf ${output}
