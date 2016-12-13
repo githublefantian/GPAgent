@@ -40,7 +40,8 @@ function myexit(){
     timestamp=`date +%s`
     echo "[$0]PID: $$, myexit!"
     echo -e "[$0]====script stop time:${currenttime} (${timestamp})===="
-    exit ${ABNORMAL_EXIT}
+    #exit ${ABNORMAL_EXIT}
+    exit
 }
 
 filelist=""
@@ -209,6 +210,8 @@ rm -rf ${output//.pcap/.dump}_*
 finishtime=$(date +%s)
 echo "[$0] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in total"
 
-exit ${SUCCESS_OK}
+
+myexit
+#exit ${SUCCESS_OK}
 
 
