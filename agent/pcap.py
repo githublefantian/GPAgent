@@ -4,6 +4,8 @@ import subprocess
 from cmdmacro import *
 from agentlog import agentlog
 import commands
+import file_manage
+
 
 
 def stopprocess(pid):
@@ -76,10 +78,13 @@ def get_exec_cmd(type, parad):
         else:
             pass
     elif type == TT_TRANS:
-        if T_VALUE not in parad:
-            cmd = AGENTD + "file_transfer.sh"
-        else:
-            pass
+        file_manage.parse_filesinfo_para(parad)
+        if (TRANS_DST not in parad) or (TRANS_SRC not in parad) or (TRANS_FILTER not in parad):
+            raise AgentError("%s lack of parameters %s" % (type, str(parad)))
+        ret = file_manage.managefiles(type, parad[TRANS_SRC].split('#'), parad[TRANS_FILTER].split('#'))
+        if ret == 0:
+            raise AgentError('%s src files is empty!' % type)
+        cmd = AGENTD + "file_transfer.sh" + " " + parad[TRANS_DST]
     elif type == TT_MD5:
         if T_VALUE not in parad:
             cmd = AGENTD + "md5_generate.sh"
@@ -176,3 +181,19 @@ if __name__ == "__main__":
         sleep(2)
         print ret
     print "parse end!"
+
+    # 文件传输
+    print "transfer files start"
+    #ret = exec_process("trans", "start", {"src": "/backup/20161212_231036_em1.pcap_copy", "dst": "10.10.88.172:/home/test/"})
+    ret = exec_process("trans", "start", {"src": "/backup/", "dst": "10.10.88.172:/home/test/"})
+    print ret
+    pid = ret["pid"]
+    while(1):
+        ret = exec_process("trans", "status", {'pid': pid})
+        #ret = exec_parse_cmd("analyse-status", {"pid": pid})
+        if ret["status"] == "end":
+            break
+        sleep(1)
+        print ret
+    print "parse end!"
+
