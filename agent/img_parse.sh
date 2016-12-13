@@ -78,7 +78,9 @@ done
 
 
 # 日志输出重定向
+if [ ! $DEBUG == "yes" ]; then
 exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
+fi
 
 # filt the data packets
 split_files=""

@@ -86,7 +86,10 @@ if [ "x${starttime}" == "x" ] || [ "x${endtime}" == "x" ] || \
 fi
 
 # 日志输出重定向
+if [ ! $DEBUG == "yes" ]; then
 exec >> ${DEFAULTLOG}${DEFAULTLOGNAME} 2>> ${DEFAULTLOG}${DEFAULTLOGNAME}
+fi
+
 echo "nics:${nics}, starttime:${starttime}, endtime:${endtime}, periodtime:${period,} output_dir:${out_dir}"
 
 # 脚本启动处理
