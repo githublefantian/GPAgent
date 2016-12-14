@@ -7,6 +7,16 @@ trap '' HUP
 trap 'myexit' INT QUIT TERM
 
 
+# 日志输出重定向
+if [ ! $DEBUG == "yes" ]; then
+exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
+fi
+
+currenttime=`date`
+timestamp=`date +%s`
+echo -e "[$0]====script start time:${currenttime} (${timestamp})===="
+
+
 function myexit(){
     echo "[$0] stop all img_parse.sh program!"
     echo "ps aux | grep "img_parse.sh" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -s TERM > /dev/null"
@@ -20,15 +30,6 @@ function myexit(){
     exit
 }
 
-# 日志输出重定向
-if [ ! $DEBUG == "yes" ]; then
-exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
-fi
-
-
-currenttime=`date`
-timestamp=`date +%s`
-echo -e "[$0]====script start time:${currenttime} (${timestamp})===="
 
 for file in ${PCAP_DIR}/*$1*; do
     echo "[$0] ${AGENT_DIR}/img_parse.sh -f ${file} &"

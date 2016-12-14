@@ -6,6 +6,16 @@ source /root/agent/agent.env
 trap '' HUP
 trap 'myexit' INT QUIT TERM
 
+# 日志输出重定向
+if [ ! $DEBUG == "yes" ]; then
+exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
+fi
+
+currenttime=`date`
+timestamp=`date +%s`
+echo -e "[$0]====script start time:${currenttime} (${timestamp})===="
+
+
 SUCCESS_OK=0
 ERROR_PARA=1
 ERROR_TCPDUMP=2
@@ -87,11 +97,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-
-# 日志输出重定向
-if [ ! $DEBUG == "yes" ]; then
-exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
-fi
 
 # filt the data packets
 split_files=""
@@ -227,6 +232,10 @@ finishtime=$(date +%s)
 echo "[$0] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in total"
 
 
+currenttime=`date`
+timestamp=`date +%s`
+echo "[$0]PID: $$, myexit!"
+echo -e "[$0]====script stop time:${currenttime} (${timestamp})===="
 exit ${SUCCESS_OK}
 
 

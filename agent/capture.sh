@@ -5,6 +5,17 @@ source /root/agent/agent.env
 trap '' HUP
 trap 'myexit' INT QUIT TERM
 
+
+# 日志输出重定向
+if [ ! $DEBUG == "yes" ]; then
+exec >> ${DEFAULTLOG}${DEFAULTLOGNAME} 2>> ${DEFAULTLOG}${DEFAULTLOGNAME}
+fi
+
+currenttime=`date`
+timestamp=`date +%s`
+echo -e "[$0]====[script start time]:${currenttime} (${timestamp})===="
+
+
 usage="
 Usage:\n
   -d: duration_time(seconds)\n
@@ -85,19 +96,12 @@ if [ "x${starttime}" == "x" ] || [ "x${endtime}" == "x" ] || \
   exit
 fi
 
-# 日志输出重定向
-if [ ! $DEBUG == "yes" ]; then
-exec >> ${DEFAULTLOG}${DEFAULTLOGNAME} 2>> ${DEFAULTLOG}${DEFAULTLOGNAME}
-fi
 
 echo "nics:${nics}, starttime:${starttime}, endtime:${endtime}, periodtime:${period,} output_dir:${out_dir}"
 
 # 脚本启动处理
 PIDDir=${DEFAULTPIDDIR}$$/
 rm -rf ${PIDDir} && mkdir -p ${PIDDir} # 创建进程目录
-currenttime=`date`
-timestamp=`date +%s`
-echo -e "\n====[script start time]:${currenttime} (${timestamp})===="
 echo "PID: $$"
 echo "COMMAND: $0 $*"
 echo "nics:${nics}, starttime:${starttime}, endtime:${endtime}, periodtime:${period,} output_dir:${out_dir}"
@@ -119,7 +123,7 @@ function myexit(){
   currenttime=`date`
   timestamp=`date +%s`
   echo "PID: $$, Exit normal!"
-  echo -e "====[script stop time]:${currenttime} (${timestamp})===="
+  echo -e "[$0]====[script stop time]:${currenttime} (${timestamp})===="
   exit
 }
 
@@ -176,3 +180,9 @@ do
     checkall
   fi
 done
+
+
+currenttime=`date`
+timestamp=`date +%s`
+echo "PID: $$, Exit normal!"
+echo -e "[$0]====[script stop time]:${currenttime} (${timestamp})===="

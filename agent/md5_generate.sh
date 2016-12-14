@@ -11,6 +11,10 @@ if [ ! $DEBUG == "yes" ]; then
     exec >> ${LOG_DIR}/${MD5LOGNAME} 2>> ${LOG_DIR}/${MD5LOGNAME}
 fi
 
+currenttime=`date`
+timestamp=`date +%s`
+echo -e "[$0]====script start time:${currenttime} (${timestamp})===="
+
 # 有参数
 if [ "x$1" != "x" ]; then
     filelist=${1//,/ }
@@ -32,3 +36,9 @@ for input in ${filelist}; do
     fi
 done
 wait
+
+
+currenttime=`date`
+timestamp=`date +%s`
+echo "PID: $$, Exit normal!"
+echo -e "[$0]====[script stop time]:${currenttime} (${timestamp})===="
