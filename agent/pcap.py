@@ -52,10 +52,11 @@ def stopprocess(type, pid):
         # 发送 SIGTERM
         p.terminate()
         # 等待结束，防止成为僵尸进程
-        ret = p.wait(timeout=1)
+        ret = p.wait(timeout=2)
         # print ret, type(ret)
         if ret == 0:
             delprocesspid(type, pid)
+            agentlog.debug("stopprocess type:%s propid:%d" % (type, pid))
             return(True, "PID:%d terminate success" % pid)
         else:
             return(False, "PID:%d terminate failed!" % pid)
@@ -144,7 +145,7 @@ def exec_process(type, key, parad):
             if not ret:
                 raise AgentError(PROCESS_STATUS + ": " + info)
         else:
-            agentlog.debug(str(g_pid_dict))
+            agentlog.debug(str(g_pid_dict[type]))
             for propid in g_pid_dict[type]:
                 ret, info = getPIDinfo(propid, type)
                 if ret and info:  # True && True indicates running...
@@ -159,7 +160,7 @@ def exec_process(type, key, parad):
         if PROCESS_PID in parad:
             ret, info = stopprocess(type, int(parad[PROCESS_PID]))
         else:
-            agentlog.debug(str(g_pid_dict))
+            agentlog.debug(str(g_pid_dict[type]))
             for propid in g_pid_dict[type]:
                 ret, info = stopprocess(type, propid)
                 if not ret:  # True indicates running...
