@@ -102,7 +102,7 @@ for input in ${filelist}; do
     # 统计pcap文件信息以及md5sum
     echo "[$0] pcapinfos && md5sum......"
     output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_IMG_RESULT}"
-    echo "[$0] capinfos ${input} -T -m > ${output} ......"
+    echo "[$0] capinfos ${input} -acdesSuTm > ${output} ......"
     capinfos ${input} -T -m > ${output} &
     wait
     if [ -f ${input//.pcap/.md5} ];then

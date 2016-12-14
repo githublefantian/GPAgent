@@ -8,8 +8,43 @@ import file_manage
 import time
 
 
+g_pid_dict = {
+    TT_PCAP: [],
+    TT_TRANS: [],
+    TT_PARSE: [],
+    TT_MD5: [],
+}
 
-def stopprocess(pid):
+
+def getprocessinfo(type):
+    if type not in g_pid_dict:
+        agentlog.error("type is error!")
+    elif len(g_pid_dict[type]) == 0:
+        agentlog.info("%s process not exist!" % type)
+    else:
+        pass
+
+
+def addprocesspid(type, pid):
+    if type not in g_pid_dict:
+        agentlog.error("type is error!")
+    elif pid in g_pid_dict[type]:
+        agentlog.error("pid process has been existed!")
+    else:
+        g_pid_dict[type].append(pid)
+
+
+def delprocesspid(type, pid):
+    if type not in g_pid_dict:
+        agentlog.error("type is error!")
+    elif pid not in g_pid_dict[type]:
+        agentlog.error("pid process not exist!")
+    else:
+        g_pid_dict[type].remove(pid)
+
+
+
+def stopprocess(type, pid):
     if not isinstance(pid, int):
         return (False, "PID type error")
     if psutil.pid_exists(pid):
@@ -20,17 +55,19 @@ def stopprocess(pid):
         ret = p.wait(timeout=1)
         # print ret, type(ret)
         if ret == 0:
+            delprocesspid(type, pid)
             return(True, "PID:%d terminate success" % pid)
         else:
             return(False, "PID:%d terminate failed!" % pid)
     else:
         return(False, "PID:%d not exists!" %pid)
 
-def startcmd(cmd):
+def startcmd(type, cmd):
     if not isinstance(cmd, str):
         return(False, "parameter type error")
     agentlog.info("startcmd:" + cmd)
     child = subprocess.Popen(cmd, shell=True)
+    addprocesspid(type, child.pid)
     # 返回数据结构
     return (True, child.pid)
 
@@ -43,7 +80,7 @@ def getPIDinfo(pid, type=""):
     status = 0
 
     if not isinstance(pid, int):
-        return (False, "PID type error")
+        return False, "PID type error"
     if psutil.pid_exists(pid):
         if type == TT_PCAP:
             (status, output) = commands.getstatusoutput('ps aux | grep capture.sh | grep -v grep')
@@ -56,7 +93,7 @@ def getPIDinfo(pid, type=""):
         else:
             pass
         if status != 0:
-            ret = stopprocess(pid)
+            ret = stopprocess(type, pid)
             agentlog.info("stopprocess[%s]:  %s" % (type, str(ret)))
             return True, False
         else:
@@ -101,29 +138,40 @@ def get_exec_cmd(type, parad):
 
 def exec_process(type, key, parad):
     if key == PROCESS_STATUS:
+        ret, info = True, True
         if PROCESS_PID in parad:
             ret, info = getPIDinfo(int(parad[PROCESS_PID]), type)
             if not ret:
                 raise AgentError(PROCESS_STATUS + ": " + info)
-            else:
-                if info:
-                    return {STATUS_KEY: STATUS_RUN}
-                else:
-                    return {STATUS_KEY: STATUS_END}
         else:
-            return AgentError('%s-%s lack of PID' % (type, key))
+            agentlog.info(str(g_pid_dict))
+            for propid in g_pid_dict[type]:
+                ret, info = getPIDinfo(propid, type)
+                if ret and info:  # True && True indicates running...
+                    break
+        if info:
+            return {STATUS_KEY: STATUS_RUN}
+        else:
+            return {STATUS_KEY: STATUS_END}
+        #return AgentError('%s-%s lack of PID' % (type, key))
     elif key == PROCESS_STOP:
-        if PROCESS_PID not in parad:
-            return AgentError('%s-%s lack of PID' % (type, key))
+        ret, info = True, ""
+        if PROCESS_PID in parad:
+            ret, info = stopprocess(type, int(parad[PROCESS_PID]))
         else:
-            ret, info = stopprocess(int(parad[PROCESS_PID]))
-            if not ret:
-                raise AgentError(PROCESS_STOP + " : " + info)
-            else:
-                return {STATUS_KEY: STATUS_SUCCESS}
+            agentlog.info(str(g_pid_dict))
+            for propid in g_pid_dict[type]:
+                ret, info = stopprocess(type, propid)
+                if not ret:  # True indicates running...
+                    break
+        if not ret:
+            raise AgentError(PROCESS_STOP + " : " + info)
+        else:
+            return {STATUS_KEY: STATUS_SUCCESS}
+        # return AgentError('%s-%s lack of PID' % (type, key))
     elif key == PROCESS_START:
         cmd = get_exec_cmd(type, parad)
-        ret, pid = startcmd(cmd)
+        ret, pid = startcmd(type, cmd)
         if not ret:
             raise AgentError("%s-%s : failed!" % (type, key))
         else:
