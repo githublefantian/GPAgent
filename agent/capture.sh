@@ -176,8 +176,8 @@ do
   #echo "endtime:$endtime; currenttime:$currenttime"
   if [ ${endtime} -le ${currenttime} ];then
     myexit
-  else
-    checkall
+  #else
+  #  checkall
   fi
 done
 
