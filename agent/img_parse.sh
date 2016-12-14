@@ -108,7 +108,7 @@ for input in ${filelist}; do
     echo "[$0] pcapinfos && md5sum......"
     output="${RESULT_DIR}/${input_basename%.*}${SUFFIX_IMG_RESULT}"
     echo "[$0] capinfos ${input} -acdesSuTm > ${output} ......"
-    capinfos ${input} -T -m > ${output} &
+    capinfos ${input} -acdesSuTm  > ${output} &
     wait
     if [ -f ${input//.pcap/.md5} ];then
         echo "[$0] cat ${input//.pcap/.md5} | cut -d ' ' -f 1 ......"
