@@ -129,9 +129,9 @@ def get_exec_cmd(type, parad):
         if T_VALUE not in parad:
             cmd = AGENTD + "md5_generate.sh"
         else:
-            pass
+            cmd = AGENTD + "md5_generate.sh " + parad[T_VALUE].replace('#', ',')
     else:
-        pass
+        raise AgentError("type error! %s" % type)
 
     return cmd
 
@@ -144,7 +144,7 @@ def exec_process(type, key, parad):
             if not ret:
                 raise AgentError(PROCESS_STATUS + ": " + info)
         else:
-            agentlog.info(str(g_pid_dict))
+            agentlog.debug(str(g_pid_dict))
             for propid in g_pid_dict[type]:
                 ret, info = getPIDinfo(propid, type)
                 if ret and info:  # True && True indicates running...
@@ -159,7 +159,7 @@ def exec_process(type, key, parad):
         if PROCESS_PID in parad:
             ret, info = stopprocess(type, int(parad[PROCESS_PID]))
         else:
-            agentlog.info(str(g_pid_dict))
+            agentlog.debug(str(g_pid_dict))
             for propid in g_pid_dict[type]:
                 ret, info = stopprocess(type, propid)
                 if not ret:  # True indicates running...
