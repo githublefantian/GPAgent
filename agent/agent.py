@@ -34,12 +34,14 @@ class S(BaseHTTPRequestHandler):
         self._set_headers()
         length = self.headers.getheaders('content-length')
         data = self.rfile.read(int(length[0]))
+        agentlog.info('Received post data: %s' % data)
         result = cmdhandler.mainbody(data)
-        agentlog.info(str(result))
+        #agentlog.info(str(result))
         if result == {}:
             agentlog.warning('do_POST result is {}')
         else:
             self.wfile.write(json.dumps(result))
+            agentlog.info(str(json.dumps(result)))
 
 def run(server_class=HTTPServer, handler_class=S, port=int(DEFAULT_PORT)):
     server_address = ('', port)

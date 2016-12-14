@@ -19,7 +19,8 @@ def getsysinfo(type):
     elif type == NICKEYRealTime:
         result = sysinfo.getNICRealTimeInfo()
     else:
-        agentlog.error('error! getsysinfo:', type)
+        agentlog.error('type error! getsysinfo: %s' % type)
+        raise AgentError('type error! getsysinfo: %s' % type)
 
     return result
 
@@ -34,7 +35,8 @@ def getqueryinfo(type, para):
     elif type == FILEREMOVEKEY:
         result = sysinfo.removeFiles(para)
     else:
-        agentlog.info('error! getqueryinfo:', type)
+        agentlog.info('type error! getqueryinfo: %s' % type)
+        raise AgentError('type error! getqueryinfo: %s' % type)
 
     return result
 
@@ -58,7 +60,6 @@ def parsestr(str=''):
 
 def mainbody(data):
     ret = {}
-    agentlog.info('Received post data: %s' % data)
     try:
         if (data is not None) and (data != ''):
             para = parsestr(data)
@@ -67,12 +68,14 @@ def mainbody(data):
                 pass
             elif para[T_TYPE] == TT_REQ:
                 ret = getqueryinfo(para[T_KEY], para)
-            elif para[T_TYPE] in (TT_PCAP, TT_PARSE, TT_TRANS, TT_MD5, TT_REMOVE):
+            elif para[T_TYPE] in (TT_PCAP, TT_PARSE, TT_TRANS, TT_MD5):
                 ret = pcap.exec_process(para[T_TYPE], para[T_KEY], para)
             else:
                 agentlog.error('request type error: %s' % para[T_TYPE])
+                raise AgentError('request type error: %s' % para[T_TYPE])
         else:
             agentlog.error('request cmd is empty')
+            raise AgentError('request cmd is empty')
     except AgentError, e:
         ret[ERROR_INFO] = e.value
         agentlog.error(e)

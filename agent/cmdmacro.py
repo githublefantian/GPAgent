@@ -18,12 +18,16 @@ TT_REMOVE = 'remove'  # 删除文件命令
 
 
 T_KEY = 'key'
+
+
 CPUKEY = 'device-cpu'
 DISKKEY = 'device-disk'
 MEMKEY= 'device-mem'
 NICKEY = 'device-nic'
 NTPKEY = 'ntp-status'
 NICKEYRealTime = 'nic-traffic'
+
+
 FILEINFOKEY = 'file-infos'
 FILEREMOVEKEY = 'file-remove'
 FILETRANSKEY = TT_TRANS
