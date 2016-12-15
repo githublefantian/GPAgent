@@ -37,6 +37,6 @@ if [ ! $? -eq 0 ]; then
     cat >> /etc/crontab <<EOF
 
 # enable crontab python agent.py!
-*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -v grep) || (/root/agent/agent.py &>> /home/log/agent.log &))
+*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -v grep) || (python /root/agent/agent.py &>> /home/log/agent.log &))
 EOF
 fi

@@ -41,6 +41,7 @@ function myexit(){
 
 
 for file in ${filelist}; do
+    echo "scp ${file} ${dstpath} &"
     scp ${file} ${dstpath} &
 done
 wait

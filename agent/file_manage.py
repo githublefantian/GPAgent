@@ -66,7 +66,7 @@ def managefiles(key, dirlist=[], filter=[]):
                 if flag == 1:
                     flag = 0
                     continue
-                agentlog.debug("%s: manage file %s" % (key, os.path.join(dir, filename)))
+                #agentlog.debug("%s: manage file %s" % (key, os.path.join(dir, filename)))
                 if key == FILETRANSKEY:
                     addtransferfiles(os.path.join(dir, filename))
                     count += 1
@@ -77,7 +77,7 @@ def managefiles(key, dirlist=[], filter=[]):
                 else:
                     pass
         elif os.path.isfile(dir):
-            agentlog.debug("%s: manage file %s" % (key, dir))
+            #agentlog.debug("%s: manage file %s" % (key, dir))
             if key == FILETRANSKEY:
                 addtransferfiles(dir)
                 count += 1
