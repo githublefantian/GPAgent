@@ -52,7 +52,8 @@ def stopprocess(type, pid):
         # 发送 SIGTERM
         p.terminate()
         # 等待结束，防止成为僵尸进程
-        ret = p.wait(timeout=2)
+        #ret = p.wait(timeout=2)
+        ret = p.wait()
         # print ret, type(ret)
         if ret == 0:
             delprocesspid(type, pid)
