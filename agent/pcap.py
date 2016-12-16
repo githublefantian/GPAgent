@@ -143,7 +143,7 @@ def get_exec_cmd(type, parad):
 
 def exec_process(type, key, parad):
     if key == PROCESS_STATUS:
-        ret, info = True, True
+        ret, info = True, False  # 默认程序是结束的
         if PROCESS_PID in parad:
             ret, info = getPIDinfo(int(parad[PROCESS_PID]), type)
             if not ret:
