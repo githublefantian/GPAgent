@@ -21,7 +21,7 @@ if [ ! $? -eq 0 ]; then
     cat >> /etc/rc.local <<EOF
 
 # enable python agent.py startup!
-python /root/agent/agent.py &>> /home/log/agent.log &
+python /root/agent/agent.py &
 EOF
 fi
 
@@ -37,6 +37,6 @@ if [ ! $? -eq 0 ]; then
     cat >> /etc/crontab <<EOF
 
 # enable crontab python agent.py!
-*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -v grep) || (python /root/agent/agent.py &>> /home/log/agent.log &))
+*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -v grep) || (python /root/agent/agent.py &))
 EOF
 fi
