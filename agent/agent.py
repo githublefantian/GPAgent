@@ -41,7 +41,7 @@ class S(BaseHTTPRequestHandler):
             agentlog.warning('do_POST result is {}')
         else:
             self.wfile.write(json.dumps(result))
-            agentlog.info(str(json.dumps(result)))
+            agentlog.debug(str(json.dumps(result)))
 
 def run(server_class=HTTPServer, handler_class=S, port=int(DEFAULT_PORT)):
     server_address = ('', port)
