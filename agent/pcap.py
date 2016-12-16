@@ -179,8 +179,11 @@ def exec_process(type, key, parad):
             return {STATUS_KEY: STATUS_SUCCESS}
         # return AgentError('%s-%s lack of PID' % (type, key))
     elif key == PROCESS_START:
+        # 防止重复启动抓包命令
+        if type == TT_PCAP and len(g_pid_dict[TT_PCAP]) >= 1:
+            raise AgentError("%s process is running!" % type)
         cmd = get_exec_cmd(type, parad)
-        ret, pid = startcmd(type, cmd)
+        ret, pid = startcmd(type, cmd)  # 会增加process pid
         if not ret:
             raise AgentError("%s-%s : failed!" % (type, key))
         else:
