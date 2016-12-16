@@ -34,12 +34,7 @@ FILETRANSKEY = TT_TRANS
 
 T_VALUE = 'value' # 多个值则以#号分开，如： p5p1#p5p1
 
-# 文件信息查询
-# type=req&key=log&filter=201209
-# type=req&src=/home/filter&filter=201209#pcap
-# 文件传输类型
-# type=trans&key=log&dst=192.168.2.1:/home/&filter=201209
-# type=trans&src=/home/filter&dst=192.168.2.1:/home/&filter=201209#pcap
+# 文件类型
 TRANS_LOG = 'log'
 TRANS_PCAP = 'pcap'
 TRANS_CSV = 'csv'
@@ -47,6 +42,7 @@ TRANS_TMPPCAP = 'tmppcap'
 TRANS_SRC = 'src'
 TRANS_DST = 'dst'
 TRANS_FILTER = 'filter'
+PARSE_NOFILTER = 'nofilter'
 
 
 # 进程状态

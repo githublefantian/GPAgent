@@ -30,8 +30,10 @@ function myexit(){
     exit
 }
 
+[ $# -eq 0 -o "$1" == "-h" ] && echo "Usage: ./img_deal.sh <time> <unparsed nic name>" && exit
 
 for file in ${PCAP_DIR}/*$1*; do
+    [ $# -eq 2 -a "${file:0-9:4}" == "$2" ] && continue
     echo "[$0] ${AGENT_DIR}/img_parse.sh -f ${file} &"
     ${AGENT_DIR}/img_parse.sh -f ${file} &
 done

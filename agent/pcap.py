@@ -113,12 +113,15 @@ def get_exec_cmd(type, parad):
             nics = parad[T_VALUE].replace('#', ',')
             cmd = AGENTD + 'capture.sh' + ' -n ' + nics
     elif type == TT_PARSE:
-        if T_VALUE not in parad:
-            todaydate = time.strftime('%Y%m%d', time.localtime(time.time()))
-            cmd = AGENTD + "img_deal.sh " + todaydate
+        if PARSE_NOFILTER in parad:
+            nofilter = parad[PARSE_NOFILTER]
         else:
-            cmd = AGENTD + "img_deal.sh " + parad[T_VALUE]
-            pass
+            nofilter = ""
+        if T_VALUE in parad:
+            todaydate = parad[T_VALUE]
+        else:
+            todaydate = time.strftime('%Y%m%d', time.localtime(time.time()))
+        cmd = AGENTD + "img_deal.sh " + todaydate + " " + nofilter
     elif type == TT_TRANS:
         file_manage.parse_filesinfo_para(parad)
         if (TRANS_DST not in parad) or (TRANS_SRC not in parad) or (TRANS_FILTER not in parad):
