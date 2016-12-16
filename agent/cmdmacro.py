@@ -52,6 +52,8 @@ STATUS_END = 'end'
 STATUS_SUCCESS = 'success'
 PROCESS_PID = 'pid'
 
+# 抓包参数
+PCAP_DURATION = 'duration'
 # 命令类型
 PROCESS_START = 'start'
 PROCESS_STATUS = 'status'

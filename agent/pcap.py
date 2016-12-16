@@ -107,11 +107,15 @@ def getPIDinfo(pid, type=""):
 def get_exec_cmd(type, parad):
     cmd = ''
     if type == TT_PCAP:
+        if PCAP_DURATION in parad:
+            duration = parad[PCAP_DURATION]
+        else:
+            duration = ""
         if T_VALUE not in parad:
-            cmd = AGENTD + 'capture.sh'
+            cmd = AGENTD + 'capture.sh' + ' -d ' + duration
         else:
             nics = parad[T_VALUE].replace('#', ',')
-            cmd = AGENTD + 'capture.sh' + ' -n ' + nics
+            cmd = AGENTD + 'capture.sh' + ' -d ' + duration + ' -n ' + nics
     elif type == TT_PARSE:
         if PARSE_NOFILTER in parad:
             nofilter = parad[PARSE_NOFILTER]
