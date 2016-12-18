@@ -1,2 +1,3 @@
-## complie ports_statistics.c
-`gcc -Wall -O2 -o ports_statistics -lpcap`
+## IMPORTANT: Please complie ports_statistics.c !!!
+1. `make`
+2. `python agent.py`
