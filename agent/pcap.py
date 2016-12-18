@@ -13,6 +13,7 @@ g_pid_dict = {
     TT_TRANS: [],
     TT_PARSE: [],
     TT_MD5: [],
+    TT_FILTER: [],
 }
 
 
@@ -139,6 +140,14 @@ def get_exec_cmd(type, parad):
             cmd = AGENTD + "md5_generate.sh"
         else:
             cmd = AGENTD + "md5_generate.sh " + parad[T_VALUE].replace('#', ',')
+    elif type == TT_FILTER:
+        if T_VALUE not in parad:
+            raise AgentError('%s value parameter is empty!' % type)
+        elif FILTER_EXP not in parad:
+            raise AgentError('%s filter expression parameter is empty!' % type)
+        else:
+            cmd = AGENTD + "pcap_filter.sh " + parad[FILTER_EXP] + ' ' + parad[T_VALUE].replace('#', ',')
+        pass
     else:
         raise AgentError("type error! %s" % type)
 

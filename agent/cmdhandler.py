@@ -68,7 +68,7 @@ def mainbody(data):
                 pass
             elif para[T_TYPE] == TT_REQ:
                 ret = getqueryinfo(para[T_KEY], para)
-            elif para[T_TYPE] in (TT_PCAP, TT_PARSE, TT_TRANS, TT_MD5):
+            elif para[T_TYPE] in (TT_PCAP, TT_PARSE, TT_TRANS, TT_MD5, TT_FILTER):
                 ret = pcap.exec_process(para[T_TYPE], para[T_KEY], para)
             else:
                 agentlog.error('request type error: %s' % para[T_TYPE])

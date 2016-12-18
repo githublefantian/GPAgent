@@ -15,6 +15,7 @@ TT_PARSE = 'parse' # 分析命令
 TT_TRANS = 'trans' # 文件传输
 TT_MD5 = 'md5'  # 计算md5校验值
 TT_REMOVE = 'remove'  # 删除文件命令
+TT_FILTER = 'filter'  # 数据包过滤
 
 
 T_KEY = 'key'
@@ -38,11 +39,14 @@ T_VALUE = 'value' # 多个值则以#号分开，如： p5p1#p5p1
 TRANS_LOG = 'log'
 TRANS_PCAP = 'pcap'
 TRANS_CSV = 'csv'
-TRANS_TMPPCAP = 'tmppcap'
+TRANS_FILTERPCAP = 'filterpcap'
 TRANS_SRC = 'src'
 TRANS_DST = 'dst'
 TRANS_FILTER = 'filter'
 PARSE_NOFILTER = 'nofilter'
+
+# 数据包过滤参数
+FILTER_EXP = 'exp'
 
 
 # 进程状态
@@ -81,6 +85,10 @@ NO_CT_ERROR_RESPONSE = 3    # content-type 类型错误(状态码200)
 LOGD = ''
 RESULTD = ''
 TMPPCAPD = ''
+AGENTD = ''
+PCAPD = ''
+FILTERPCAPD = ''
+
 with open(DEFAULT_ENV, 'r') as envf:
     for line in envf.readlines():
         if line.startswith('DEFAULTNICS='):
@@ -99,12 +107,12 @@ with open(DEFAULT_ENV, 'r') as envf:
             PCAPD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('TMPPCAP_DIR='):
             TMPPCAPD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('FILTERPCAP_DIR='):
+            FILTERPCAPD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('AGENT_DIR='):
             AGENTD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('TRANSFERTMP='):
             TRANSFERTMP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
-        elif line.startswith('PCAPFILTERTMP='):
-            PCAPFILTERTMP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('IMGLOGNAME='):
             IMGLOGNAME = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('AGENTLOGNAME='):
@@ -112,7 +120,7 @@ with open(DEFAULT_ENV, 'r') as envf:
         else:
             pass
 
-if LOGD == '' or RESULTD == '' or TMPPCAPD == '' or AGENTD == '' or PCAPD == '':
+if LOGD == '' or RESULTD == '' or TMPPCAPD == '' or AGENTD == '' or PCAPD == '' or FILTERPCAPD == '':
     print("[ERROR] Read parameters from agent.env error!")
 else:
     LOGD += '/'
@@ -120,6 +128,7 @@ else:
     TMPPCAPD += '/'
     AGENTD += '/'
     PCAPD += '/'
+    FILTERPCAPD += '/'
 
 
 class AgentError(Exception):
@@ -128,4 +137,5 @@ class AgentError(Exception):
 
     def __str__(self):
         return repr(self.value)
+
 
