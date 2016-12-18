@@ -3,6 +3,7 @@
 import logging
 import logging.handlers
 from cmdmacro import *
+import os
 
 class Cmy_logger(object):
 
@@ -28,6 +29,6 @@ class Cmy_logger(object):
     def getlog(self):
         return self.logger
 
-agentlog = Cmy_logger(logname=(LOGD + 'agent.log'), logger="agent").getlog()
-imagelog = Cmy_logger(logname=(LOGD + 'image.log'), logger="image").getlog()
-mergelog = Cmy_logger(logname=(LOGD + 'image.log'), logger="merge").getlog()
+agentlog = Cmy_logger(logname=(os.path.join(LOGD, AGENTLOGNAME)), logger="agent").getlog()
+imagelog = Cmy_logger(logname=(os.path.join(LOGD, IMGLOGNAME)), logger="image").getlog()
+mergelog = Cmy_logger(logname=(os.path.join(LOGD, IMGLOGNAME)), logger="merge").getlog()

@@ -83,7 +83,15 @@ RESULTD = ''
 TMPPCAPD = ''
 with open(DEFAULT_ENV, 'r') as envf:
     for line in envf.readlines():
-        if line.startswith('LOG_DIR='):
+        if line.startswith('DEFAULTNICS='):
+            DEFAULT_NICS = line.replace('#', '=').split('=')[1].strip(' "\'\n').split(' ')  # list
+        elif line.startswith('SPLITOVERLAP='):
+            SPLIT_OVERLAP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('DEFAULT_PORT='):
+            DEFAULT_PORT = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('DEFAULT_DISKPATH='):
+            DEFAULT_DISKPATH = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('LOG_DIR='):
             LOGD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('RESULT_DIR='):
             RESULTD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
@@ -91,18 +99,16 @@ with open(DEFAULT_ENV, 'r') as envf:
             PCAPD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('TMPPCAP_DIR='):
             TMPPCAPD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
-        elif line.startswith('SPLITOVERLAP='):
-            SPLIT_OVERLAP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('AGENT_DIR='):
             AGENTD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
-        elif line.startswith('DEFAULT_PORT='):
-            DEFAULT_PORT = line.replace('#', '=').split('=')[1].strip(' "\'\n')
-        elif line.startswith('DEFAULTNICS='):
-            DEFAULT_NICS = line.replace('#', '=').split('=')[1].strip(' "\'\n').split(' ')  # list
-        elif line.startswith('DEFAULT_DISKPATH='):
-            DEFAULT_DISKPATH = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('TRANSFERTMP='):
             TRANSFERTMP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('PCAPFILTERTMP='):
+            PCAPFILTERTMP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('IMGLOGNAME='):
+            IMGLOGNAME = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('AGENTLOGNAME='):
+            AGENTLOGNAME = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         else:
             pass
 
@@ -114,6 +120,7 @@ else:
     TMPPCAPD += '/'
     AGENTD += '/'
     PCAPD += '/'
+
 
 class AgentError(Exception):
     def __init__(self, value):
