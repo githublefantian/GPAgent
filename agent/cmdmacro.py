@@ -91,7 +91,7 @@ FILTERPCAPD = ''
 
 with open(DEFAULT_ENV, 'r') as envf:
     for line in envf.readlines():
-        if line.startswith('DEFAULTNICS='):
+        if line.startswith('CAPTURE_NICS='):
             DEFAULT_NICS = line.replace('#', '=').split('=')[1].strip(' "\'\n').split(' ')  # list
         elif line.startswith('SPLITOVERLAP='):
             SPLIT_OVERLAP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
