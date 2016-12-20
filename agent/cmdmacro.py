@@ -43,7 +43,7 @@ TRANS_FILTERPCAP = 'filterpcap'
 TRANS_SRC = 'src'
 TRANS_DST = 'dst'
 TRANS_FILTER = 'filter'
-PARSE_NOFILTER = 'nofilter'
+PARSE_NOFILTER = 'unfilter'
 
 # 数据包过滤参数
 FILTER_EXP = 'exp'
