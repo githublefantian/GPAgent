@@ -36,3 +36,13 @@ if [ ! $? -eq 0 ]; then
 */1 * * * * root ((ps aux | grep python | grep agent.py | grep -qv grep) || (python /root/agent/agent.py &)) &> /dev/null
 EOF
 fi
+
+# set crontab log_deal.sh
+cat /etc/crontab | grep "crontab log_deal.sh" -q
+if [ ! $? -eq 0 ]; then
+    cat >> /etc/crontab <<EOF
+
+# enable crontab log_deal.sh
+1 0 1 * * root (sh /root/agent/log_deal.sh)
+EOF
+fi
