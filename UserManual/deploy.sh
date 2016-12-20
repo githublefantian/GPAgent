@@ -27,16 +27,12 @@ fi
 
 
 
-
-
-
-
 # set crontab python agent.py
 cat /etc/crontab | grep "crontab python agent.py" -q
 if [ ! $? -eq 0 ]; then
     cat >> /etc/crontab <<EOF
 
 # enable crontab python agent.py!
-*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -v grep) || (python /root/agent/agent.py &))
+*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -qv grep) || (python /root/agent/agent.py &)) &> /dev/null
 EOF
 fi
