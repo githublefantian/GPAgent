@@ -11,7 +11,6 @@ g_niclist = []
 
 def getFilesInfo(para):
     file_manage.parse_filesinfo_para(para)
-    print(FILEINFOKEY)
     fileinfo = file_manage.managefiles(FILEINFOKEY, para[TRANS_SRC].split('#'), para[TRANS_FILTER].split('#'))
     return {FILEINFOKEY: fileinfo}
 
