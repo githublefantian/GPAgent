@@ -41,7 +41,7 @@ function myexit(){
 
 for file in ${filelist}; do
     basefn=`basename ${file}`
-    file_suffix="_filter_`date +"%H%M%S"`.pcap"
+    file_suffix="_filter_${tcpdump_filter// /_}.pcap"
     file_out="${FILTERPCAP_DIR}/${basefn%.*}${file_suffix}"
     echo "tcpdump ${file} ${tcpdump_filter} ${file_out} &"
     tcpdump -Z root -r ${file} ${tcpdump_filter} -w ${file_out} &
