@@ -27,6 +27,7 @@ MEMKEY= 'device-mem'
 NICKEY = 'device-nic'
 NTPKEY = 'ntp-status'
 NICKEYRealTime = 'nic-traffic'
+SYSLOGKEY = 'syslog'
 
 
 FILEINFOKEY = 'file-infos'

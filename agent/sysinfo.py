@@ -4,7 +4,7 @@ import commands
 import time
 from cmdmacro import *
 import file_manage
-from agentlog import agentlog
+from agentlog import agentlog, getlogaddress, changelogaddress
 
 g_niclist = []
 
@@ -19,6 +19,23 @@ def removeFiles(para):
     file_manage.parse_filesinfo_para(para)
     fileinfo = file_manage.managefiles(FILEREMOVEKEY, para[TRANS_SRC].split('#'), para[TRANS_FILTER].split('#'))
     return {FILEREMOVEKEY: fileinfo}
+
+
+def getSyslogInfo():
+    info = getlogaddress()
+    if info:
+        return {SYSLOGKEY: {"ip": info[0], "port": info[1]}}
+    else:
+        return {}
+
+
+def setSyslogInfo(para):
+    if not len(para) == 2:
+        agentlog.error("set SyslogInfo para error!")
+        raise AgentError("set SyslogInfo para error! (at least 2)")
+    ret = changelogaddress(para[0], para[1])
+    return {SYSLOGKEY: ret}
+
 
 def getCPUInfo(period=0.5):
     '''
