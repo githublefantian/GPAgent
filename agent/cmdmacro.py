@@ -113,6 +113,8 @@ with open(DEFAULT_ENV, 'r') as envf:
             AGENTD = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('TRANSFERTMP='):
             TRANSFERTMP = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('SYSLOGCFG='):
+            SYSLOGCFG = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('IMGLOGNAME='):
             IMGLOGNAME = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('AGENTLOGNAME='):
