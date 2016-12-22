@@ -3,7 +3,7 @@
 source /root/agent/agent.env
 
 
-for file in `ls ${LOG_DIR}/*.log`; do
+for file in `ls ${LOG_DIR}/*.log*`; do
     filename=`basename ${file}`
     [ "${filename:0:2}" == "${IP_PREFIX:0:2}" ] && continue
     year=`date +%Y`
