@@ -1,7 +1,5 @@
 #!/bin/bash
 
-chmod +x /etc/rc.local
-chmod +x /root/agent/*.sh
 
 # set NIC promiscuous mode
 cat /etc/rc.local | grep "promiscuous mode" -q
@@ -46,3 +44,8 @@ if [ ! $? -eq 0 ]; then
 1 0 1 * * root (sh /root/agent/log_deal.sh)
 EOF
 fi
+
+
+chmod +x /etc/rc.local
+chmod +x /root/agent/*.sh
+sh /root/agent/agent.env
