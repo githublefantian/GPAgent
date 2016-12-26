@@ -33,7 +33,7 @@ def setSyslogInfo(para):
     if not len(para) == 2:
         agentlog.error("set SyslogInfo para error!")
         raise AgentError("set SyslogInfo para error! (at least 2)")
-    ret = changelogaddress(para[0], para[1])
+    ret = changelogaddress(para[0], int(para[1]))
     return {SYSLOGKEY: ret}
 
 

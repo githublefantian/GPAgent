@@ -1,5 +1,3 @@
-# -*- coding:utf-8 -*-
-
 import logging
 import logging.handlers
 from cmdmacro import *
@@ -35,6 +33,8 @@ class Cmy_logger(object):
         self.logger.setLevel(logging.DEBUG)
         # for remote unix syslog
         rh = logging.handlers.SysLogHandler(address=readlogcfg())
+        #(ip, port) = readlogcfg()
+        #rh = logging.handlers.SocketHandler(ip, port)
         rh.setLevel(logging.DEBUG)
         # for log file
         fh = logging.handlers.RotatingFileHandler(logname, maxBytes=30 * 1024 * 1024, backupCount=5)
@@ -58,9 +58,9 @@ class Cmy_logger(object):
         return self.logger
 
 
-agentlog = Cmy_logger(logname=(os.path.join(LOGD, AGENTLOGNAME)), logger="agent").getlog()
-imagelog = Cmy_logger(logname=(os.path.join(LOGD, IMGLOGNAME)), logger="image").getlog()
-mergelog = Cmy_logger(logname=(os.path.join(LOGD, IMGLOGNAME)), logger="merge").getlog()
+agentlog = Cmy_logger(logname=(os.path.join(LOGD, AGENTLOGNAME)), logger=(IP_PREFIX + "agent")).getlog()
+imagelog = Cmy_logger(logname=(os.path.join(LOGD, IMGLOGNAME)), logger=(IP_PREFIX + "image")).getlog()
+mergelog = Cmy_logger(logname=(os.path.join(LOGD, IMGLOGNAME)), logger=(IP_PREFIX + "merge")).getlog()
 alllogs = (agentlog, imagelog, mergelog)
 
 
@@ -77,6 +77,9 @@ def changelogaddress(ip, port):
     global agentlog
 
     oldaddress = getlogaddress()
+    if (not isinstance(ip, str)) or (not isinstance(port, int)):
+        agentlog.error("ip & port type error(str&int)!")
+        return False
     if oldaddress and oldaddress[0] == ip and oldaddress[1] == port:
         agentlog.warning("ip & port repeat!")
         return False
@@ -86,6 +89,7 @@ def changelogaddress(ip, port):
             loglist = curlog.handlers
             for logh in loglist:
                 if isinstance(logh, logging.handlers.SysLogHandler):
+                #if isinstance(logh, logging.handlers.SocketHandler):
                     # for remote unix syslog
                     rh = logging.handlers.SysLogHandler(address=(ip, port))
                     rh.setLevel(logging.DEBUG)
@@ -99,8 +103,9 @@ def changelogaddress(ip, port):
                     # remove handler
                     curlog.removeHandler(logh)
                     savelogcfg(ip, port)
+                    break
     except Exception as e:
-        print e
+        agentlog.error(e)
         return False
 
     return True

@@ -120,6 +120,8 @@ with open(DEFAULT_ENV, 'r') as envf:
             IMGLOGNAME = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         elif line.startswith('AGENTLOGNAME='):
             AGENTLOGNAME = line.replace('#', '=').split('=')[1].strip(' "\'\n')
+        elif line.startswith('IP_PREFIX'):
+            IP_PREFIX = line.replace('#', '=').split('=')[1].strip(' "\'\n')
         else:
             pass
 
