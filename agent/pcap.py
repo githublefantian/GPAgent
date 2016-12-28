@@ -98,6 +98,8 @@ def getPIDinfo(pid, type=""):
             (status, output) = commands.getstatusoutput('ps aux | grep file_transfer.sh | grep -v grep')
         elif type == TT_MD5:
             (status, output) = commands.getstatusoutput('ps aux | grep md5_generate.sh | grep -v grep')
+        elif type == TT_FILTER:
+            (status, output) = commands.getstatusoutput('ps aux | grep pcap_filter.sh | grep -v grep')
         else:
             pass
         if status != 0:
