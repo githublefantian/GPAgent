@@ -111,6 +111,8 @@ def getNICRealTimeInfo(nics=[], controller_ip=''):
     if len(g_niclist) == 0:
         getNICInfo(nics, controller_ip)
     io_counters = psutil.net_io_counters(pernic=True)
+    curtime = time.time()
+
     #agentlog.debug(str(g_niclist))
     for nic in g_niclist:
         io = io_counters[nic['name']]
@@ -118,7 +120,7 @@ def getNICRealTimeInfo(nics=[], controller_ip=''):
                    "ip": nic['ip'],
                    "mac": nic['mac'],
                    "controller-ip": nic['controller-ip'],
-                   "time": time.time(),
+                   "time": curtime,
                    "packet-counts": io.bytes_recv,
                    "total-bytes": io.packets_recv,
                    "packet-errors": io.errout,
