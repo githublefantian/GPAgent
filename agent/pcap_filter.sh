@@ -22,8 +22,6 @@ filelist=${2//,/ }
 [ ! $# -eq 2 ] && echo -e "[$0] parameters error!\n Example: $0 <pcap-filter> <file1,file2,file3>\n" && exit
 
 function myexit(){
-    echo "[$0]del ${AGENT_DIR}/${PCAPFILTERTMP}"
-    rm -rf ${AGENT_DIR}/${PCAPFILTERTMP} &> /dev/null
     echo "[$0]stop all relevant tcpdump pcap filter program!"
     for fn in ${filelist}; do
         basefn=`basename ${fn}`
