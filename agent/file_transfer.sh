@@ -41,10 +41,15 @@ function myexit(){
 
 
 for file in ${filelist}; do
-    echo "scp ${file} ${dstpath} &"
-    scp ${file} ${dstpath} &
+    echo "scp -p -q ${file} ${dstpath}"
+    scp -p -q ${file} ${dstpath}
+    if [ ! $? -eq 0 ];then
+        echo "[ERROR] RE: scp ${file} ${dstpath} && sleep 1 seconds"
+        sleep 1
+        scp -p -q ${file} ${dstpath}
+        [ ! $? -eq 0 ] && echo "[ERROR] RE: scp ${file} ${dstpath} failed! "
+    fi
 done
-wait
 
 echo "[$0]del ${AGENT_DIR}/${TRANSFERTMP}"
 rm -rf ${AGENT_DIR}/${TRANSFERTMP} &> /dev/null
