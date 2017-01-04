@@ -121,12 +121,17 @@ def getNICRealTimeInfo(nics=[], controller_ip=''):
                    "mac": nic['mac'],
                    "controller-ip": nic['controller-ip'],
                    "time": curtime,
-                   "packet-counts": io.bytes_recv,
-                   "total-bytes": io.packets_recv,
+                   "packet-counts": io.packets_recv,
+                   "total-bytes": io.bytes_recv,
                    "packet-errors": io.errout,
                    "packet-drops": io.dropin,
                    }
         io_list.append(io_item)
+        if DEBUG == 'yes':
+            fn = 'traffic_%s.csv' % io_item['name']
+            with open(fn, 'a') as traff:
+                traff.write("%s,%s,%s,%s,%s\n" % (io_item['time'],\
+                io_item['packet-counts'], io_item['total-bytes'], io_item['packet-errors'], io_item['packet-drops']))
 
     return {NICKEYRealTime: io_list}
 
