@@ -104,16 +104,18 @@ function filter_error_200_pcap() {
     while read line; do
         let lineno++
         if [ $lineno -ge 3 ]; then
-            echo $line
+            #echo $line
             currentip=`echo $line | cut -d ',' -f 2`
             currentport=`echo $line | cut -d ',' -f 3`
             currentpcap="${currentip}_${currentport}.pcap"
             resultpcap=$2$currentpcap
             [ -f $resultpcap ] && continue
-            echo "tcpdump -Z root -r $1 \"(src host $currentip and src port $currentport) or (dst host $currentip and dst port $currentport)\" -w ${resultpcap}"
+            #echo "tcpdump -Z root -r $1 \"(src host $currentip and src port $currentport) or (dst host $currentip and dst port $currentport)\" -w ${resultpcap}"
             tcpdump -Z root -r $1  "(src host $currentip and src port $currentport) or (dst host $currentip and dst port $currentport)" -w ${resultpcap}
         fi
     done < $csvfile
+    echo "cp $csvfile $2"
+    cp $csvfile $2
 }
 
 # filt the data packets
