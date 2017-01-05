@@ -8,7 +8,7 @@ trap 'myexit' INT QUIT TERM
 
 # 日志输出重定向
 if [ ! $DEBUG == "yes" ]; then
-exec >> ${DEFAULTLOG}${IMGLOGNAME} 2>> ${DEFAULTLOG}${IMGLOGNAME}
+exec >> ${LOG_DIR}/${PCAPFILTERNAME} 2>> ${LOG_DIR}/${PCAPFILTERNAME}
 fi
 
 currenttime=`date`

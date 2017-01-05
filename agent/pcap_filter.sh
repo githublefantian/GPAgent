@@ -11,6 +11,7 @@ if [ ! $DEBUG == "yes" ]; then
 exec >> ${LOG_DIR}/${PCAPFILTERNAME} 2>> ${LOG_DIR}/${PCAPFILTERNAME}
 fi
 
+
 currenttime=`date`
 timestamp=`date +%s`
 echo -e "[$0]====script start time:${currenttime} (${timestamp})===="
@@ -19,7 +20,7 @@ echo -e "[$0]====script start time:${currenttime} (${timestamp})===="
 tcpdump_filter=$1
 filelist=${2//,/ }
 
-[ ! $# -eq 2 ] && echo -e "[$0] parameters error!\n Example: $0 <pcap-filter> <file1,file2,file3>\n" && exit
+[ ! $# -eq 2 ] && echo -e "[$0] parameters error!\n Example: $0 <pcap-filter or ${PCAP_200_ERROR} <file1,file2,file3>\n" && exit
 
 function myexit(){
     echo "[$0]stop all relevant tcpdump pcap filter program!"
@@ -36,14 +37,20 @@ function myexit(){
 }
 
 
+if [ "${tcpdump_filter}" == "${PCAP_200_ERROR}" ]; then
+    for file in ${filelist}; do
+        sh ${AGENT_DIR}/extract_pcap.sh -f ${file} &
+    done
+else
+    for file in ${filelist}; do
+        basefn=`basename ${file}`
+        file_suffix="_filter_${tcpdump_filter// /_}.pcap"
+        file_out="${FILTERPCAP_DIR}/${basefn%.*}${file_suffix}"
+        echo "tcpdump ${file} ${tcpdump_filter} ${file_out} &"
+        tcpdump -Z root -r ${file} ${tcpdump_filter} -w ${file_out} &
+    done
+fi
 
-for file in ${filelist}; do
-    basefn=`basename ${file}`
-    file_suffix="_filter_${tcpdump_filter// /_}.pcap"
-    file_out="${FILTERPCAP_DIR}/${basefn%.*}${file_suffix}"
-    echo "tcpdump ${file} ${tcpdump_filter} ${file_out} &"
-    tcpdump -Z root -r ${file} ${tcpdump_filter} -w ${file_out} &
-done
 wait
 
 currenttime=`date`
