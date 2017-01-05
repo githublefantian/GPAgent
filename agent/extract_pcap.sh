@@ -54,6 +54,18 @@ function myexit(){
     exit ${ABNORMAL_EXIT}
 }
 
+# zip
+function zip_all_pcap() {
+    oldpwd=`pwd`
+    cd ${ERROR_200_DIR}
+    for file in `ls`; do
+        [ ! -d ${file} ] && continue
+        [ ${file##*.} == "zip" ] && continue
+        zip -rq ${file}.zip ${file}
+    done
+    cd $oldpwd
+}
+
 filelist=""
 # parse parameters
 [ $# -eq 0 ] && print_usage && exit ${ERROR_PARA}
@@ -143,6 +155,9 @@ for input in ${filelist}; do
     fi
 done
 wait
+
+zip_all_pcap
+
 
 
 for fn in ${filelist}; do
