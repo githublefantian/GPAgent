@@ -21,8 +21,8 @@ function myexit(){
     echo "[$0] stop all img_parse.sh program!"
     echo "ps aux | grep "img_parse.sh" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -s TERM > /dev/null"
     ps aux | grep "img_parse.sh" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -s TERM &> /dev/null
-    echo "[$0] rm -rf ${TMPPCAP_DIR}/*"
-    rm -rf ${TMPPCAP_DIR}/*
+    echo "[$0] rm -rf ${TMPPCAP_DIR}/*$1*"
+    rm -rf ${TMPPCAP_DIR}/*$1*
     currenttime=`date`
     timestamp=`date +%s`
     echo "[$0]PID: $$, myexit!"
