@@ -118,7 +118,9 @@ function filter_error_200_pcap() {
         if [ $lineno -ge 3 ]; then
             #echo $line
             currentip=`echo $line | cut -d ',' -f 2`
+            [ "$currentip" == "" ] && continue
             currentport=`echo $line | cut -d ',' -f 3`
+            [ "$currentport" == "" ] && continue
             currentpcap="${currentip}_${currentport}.pcap"
             resultpcap=$2$currentpcap
             [ -f $resultpcap ] && continue
