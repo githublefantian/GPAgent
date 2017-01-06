@@ -1,7 +1,5 @@
 #!/bin/bash
 
-chmod +x /etc/rc.local
-chmod +x /root/agent/*.sh
 
 # set NIC promiscuous mode
 cat /etc/rc.local | grep "promiscuous mode" -q
@@ -27,16 +25,27 @@ fi
 
 
 
-
-
-
-
 # set crontab python agent.py
 cat /etc/crontab | grep "crontab python agent.py" -q
 if [ ! $? -eq 0 ]; then
     cat >> /etc/crontab <<EOF
 
 # enable crontab python agent.py!
-*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -v grep) || (python /root/agent/agent.py &))
+*/1 * * * * root ((ps aux | grep python | grep agent.py | grep -qv grep) || (python /root/agent/agent.py &)) &> /dev/null
 EOF
 fi
+
+# set crontab log_deal.sh
+cat /etc/crontab | grep "crontab log_deal.sh" -q
+if [ ! $? -eq 0 ]; then
+    cat >> /etc/crontab <<EOF
+
+# enable crontab log_deal.sh
+1 0 1 * * root (sh /root/agent/log_deal.sh)
+EOF
+fi
+
+
+chmod +x /etc/rc.local
+chmod +x /root/agent/*.sh
+sh /root/agent/agent.env

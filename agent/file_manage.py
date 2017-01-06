@@ -13,7 +13,7 @@ def parse_filesinfo_para(parad):
         elif parad[T_VALUE] == TRANS_PCAP:
             parad[TRANS_SRC] = PCAPD
         elif parad[T_VALUE] == TRANS_FILTERPCAP:
-            parad[TRANS_SRC] == FILTERPCAPD
+            parad[TRANS_SRC] = FILTERPCAPD
         else:
             pass
     if TRANS_FILTER not in parad:

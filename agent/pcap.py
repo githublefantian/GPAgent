@@ -17,13 +17,16 @@ g_pid_dict = {
 }
 
 
-def getprocessinfo(type):
+def getprocessinfo(type, pid):
     if type not in g_pid_dict:
         agentlog.error("type is error!")
     elif len(g_pid_dict[type]) == 0:
         agentlog.info("%s process not exist!" % type)
+    elif pid in g_pid_dict[type]:
+        return True
     else:
-        pass
+        agentlog.info("%s process PID: %d not exist!" % (type, pid))
+    return False
 
 
 def addprocesspid(type, pid):
@@ -62,6 +65,8 @@ def stopprocess(type, pid):
             return(True, "PID:%d terminate success" % pid)
         else:
             return(False, "PID:%d terminate failed!" % pid)
+    elif getprocessinfo(type, pid):
+        delprocesspid(type, pid)
     else:
         return(False, "PID:%d not exists!" %pid)
 
@@ -93,6 +98,8 @@ def getPIDinfo(pid, type=""):
             (status, output) = commands.getstatusoutput('ps aux | grep file_transfer.sh | grep -v grep')
         elif type == TT_MD5:
             (status, output) = commands.getstatusoutput('ps aux | grep md5_generate.sh | grep -v grep')
+        elif type == TT_FILTER:
+            (status, output) = commands.getstatusoutput('ps aux | grep pcap_filter.sh | grep -v grep')
         else:
             pass
         if status != 0:

@@ -4,14 +4,13 @@ import commands
 import time
 from cmdmacro import *
 import file_manage
-from agentlog import agentlog
+from agentlog import agentlog, getlogaddress, changelogaddress
 
 g_niclist = []
 
 
 def getFilesInfo(para):
     file_manage.parse_filesinfo_para(para)
-    print(FILEINFOKEY)
     fileinfo = file_manage.managefiles(FILEINFOKEY, para[TRANS_SRC].split('#'), para[TRANS_FILTER].split('#'))
     return {FILEINFOKEY: fileinfo}
 
@@ -20,6 +19,23 @@ def removeFiles(para):
     file_manage.parse_filesinfo_para(para)
     fileinfo = file_manage.managefiles(FILEREMOVEKEY, para[TRANS_SRC].split('#'), para[TRANS_FILTER].split('#'))
     return {FILEREMOVEKEY: fileinfo}
+
+
+def getSyslogInfo():
+    info = getlogaddress()
+    if info:
+        return {SYSLOGKEY: {"ip": info[0], "port": info[1]}}
+    else:
+        return {}
+
+
+def setSyslogInfo(para):
+    if not len(para) == 2:
+        agentlog.error("set SyslogInfo para error!")
+        raise AgentError("set SyslogInfo para error! (at least 2)")
+    ret = changelogaddress(para[0], int(para[1]))
+    return {SYSLOGKEY: ret}
+
 
 def getCPUInfo(period=0.5):
     '''
@@ -95,6 +111,8 @@ def getNICRealTimeInfo(nics=[], controller_ip=''):
     if len(g_niclist) == 0:
         getNICInfo(nics, controller_ip)
     io_counters = psutil.net_io_counters(pernic=True)
+    curtime = time.time()
+
     #agentlog.debug(str(g_niclist))
     for nic in g_niclist:
         io = io_counters[nic['name']]
@@ -102,13 +120,18 @@ def getNICRealTimeInfo(nics=[], controller_ip=''):
                    "ip": nic['ip'],
                    "mac": nic['mac'],
                    "controller-ip": nic['controller-ip'],
-                   "time": time.time(),
-                   "packet-counts": io.bytes_recv,
-                   "total-bytes": io.packets_recv,
+                   "time": curtime,
+                   "packet-counts": io.packets_recv,
+                   "total-bytes": io.bytes_recv,
                    "packet-errors": io.errout,
                    "packet-drops": io.dropin,
                    }
         io_list.append(io_item)
+        if DEBUG == 'yes':
+            fn = 'traffic_%s.csv' % io_item['name']
+            with open(fn, 'a') as traff:
+                traff.write("%s,%s,%s,%s,%s\n" % (io_item['time'],\
+                io_item['packet-counts'], io_item['total-bytes'], io_item['packet-errors'], io_item['packet-drops']))
 
     return {NICKEYRealTime: io_list}
 

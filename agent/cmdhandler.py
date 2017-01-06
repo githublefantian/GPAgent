@@ -18,6 +18,8 @@ def getsysinfo(type):
         result = sysinfo.getNICInfo()
     elif type == NICKEYRealTime:
         result = sysinfo.getNICRealTimeInfo()
+    elif type == SYSLOGKEY:
+        result = sysinfo.getSyslogInfo()
     else:
         agentlog.error('type error! getsysinfo: %s' % type)
         raise AgentError('type error! getsysinfo: %s' % type)
@@ -30,6 +32,8 @@ def getqueryinfo(type, para):
         result = sysinfo.getNICInfo(para[T_VALUE].split('#'))
     elif type == NICKEYRealTime:
         result = sysinfo.getNICRealTimeInfo(para[T_VALUE].split('#'))
+    elif type == SYSLOGKEY:
+        result = sysinfo.setSyslogInfo(para[T_VALUE].split('#'))
     elif type == FILEINFOKEY:
         result = sysinfo.getFilesInfo(para)
     elif type == FILEREMOVEKEY:

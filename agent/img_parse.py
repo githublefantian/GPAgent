@@ -170,21 +170,32 @@ def p_img_no_reponse(fw, no_response_dict={}):
 
     return len(no_response_dict)
 
+'''
+REQ_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION      # 0-3
+RES_TIMESTAMP,RESPONSE_IP,RESPONSE_PORT,RES_HTTP-VERSION    # 4-7
+RES_CODE,RES_STATUS,RES_CONTENT-TYPE,REQUEST_PATH           # 7-11
+'''
 def p_img_err_reponse_path(fw, res_error_dict={}):
     (sum, ok_error) = get_err_response_sum(res_error_dict)
     fw.write('REQUEST_TOTAL,%d\n' % ok_error)
     if ok_error == 0:
         return
-    fw.write('REQUEST_TIMESTAMP,REQUEST_PATH\n')
+    fw.write('REQUEST_TIMESTAMP,RREQUEST_IP,REQUEST_PORT,EQUEST_PATH\n')
     if "200" in res_error_dict.keys():
         res_error_list = sorted(res_error_dict["200"].iteritems(), key=lambda d: d[1][0])
         for item in res_error_list:
             data = item[1]
-            line = '%f,%s\n' % (data[0], data[11])
+            line = '%f,%s,%s,%s\n' % (data[0], data[1], data[2], data[11])
             fw.write('%s' % line)
 
     return
 
+
+'''
+REQ_TIMESTAMP,REQUEST_IP,REQUEST_PORT,REQ_HTTP-VERSION      # 0-3
+RES_TIMESTAMP,RESPONSE_IP,RESPONSE_PORT,RES_HTTP-VERSION    # 4-7
+RES_CODE,RES_STATUS,RES_CONTENT-TYPE,REQUEST_PATH           # 7-11
+'''
 def p_img_err_reponse(fw, res_error_dict={}):
     (sum, ok_error) = get_err_response_sum(res_error_dict)
     fw.write('RESPONSE-ERROR PACKETS,%d\n\n' % sum)
