@@ -1,5 +1,6 @@
 ## 功能
-本程序是一个linux平台下的一个网络流量捕获、记录及分析程序（后台）。主要功能包括
+本程序是一个linux平台下的一个网络流量捕获、记录及分析程序（后台）。主要功能包括:
+
 1. 系统信息查询，包括CPU、内存、磁盘信息，网卡信息、时间同步状态等
 2. 实时网卡流量查询
 3. 高性能数据包捕获，支持多网卡、定时抓包等功能
@@ -9,15 +10,21 @@
 
 ## 部署
 - 依赖
+
 1. python 2.7, scapy库，psutil库
 2. 工具：tcpdump, netsniff-ng, capinfos, md5sum
+
 - 运行
+
 1. 将程序拷贝至`/root/`目录下
 2. 运行部署脚本`sh /root/agent/deploy.sh`
 3. 等待程序自动启动或手动启动`python agent.py`手动启动
+
 - 测试
+
 1. 键入`curl -d "type=info&key=device-mem" http://10.10.88.173:1234`命令查询内存信息
 2. 返回json数据结构
+
 ```
 {
     "device-mem": 
@@ -35,11 +42,14 @@
     }
 }
 ```
+
 - 使用
+
 1. 详见*Post_Manual.xlsx*
 2. 日志及程序运行结果存放在`/home/`下相应子目录中
 
 - 打印
+
 1. 程序默认均开启了日志重定向，包括脚本，查看实施打印`tail -f /home/log/agent.log`
 2. 取消日志重定向，请修改*agent.env*中的`DEBUG="yes"`
 
@@ -57,9 +67,11 @@
 
 
 - 配置修改
+
 1. 见`agent.env`文件
 
 - 手动测试
+
 1. 测试时，先`make`，再`python agent.py`启动程序
 
 ## 其他
