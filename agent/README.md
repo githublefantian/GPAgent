@@ -1,5 +1,5 @@
 ## 功能
-本程序是一个linux平台下的一个网络流量捕获、记录及分析程序（后台）。主要功能包括:
+本程序是一个linux平台下的网络流量捕获、记录及分析程序（后台）。主要功能包括:
 
 1. 系统信息查询，包括CPU、内存、磁盘信息，网卡信息、时间同步状态等
 2. 实时网卡流量查询
@@ -78,6 +78,6 @@
 generate release version
 `git archive --format=tar --prefix=1.0/ v1.0 | gzip > agent-1.0.tar.gz`
 
-IMPORTANT: Please complie ports_statistics.c frist!
-1. `make`
-2. `python agent.py`
+IMPORTANT: Please complie ports_statistics.c frist!  
+1. `make`  
+2. `python agent.py`  
