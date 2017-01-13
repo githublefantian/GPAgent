@@ -45,7 +45,7 @@
 
 - 使用
 
-1. 详见*Post_Manual.xlsx*
+1. 详见*../UserManual/Post_Manual.xlsx*
 2. 日志及程序运行结果存放在`/home/`下相应子目录中
 
 - 打印
