@@ -50,7 +50,7 @@
 
 - 打印
 
-1. 程序默认均开启了日志重定向，包括脚本，查看实施打印`tail -f /home/log/agent.log`
+1. 程序默认均开启了日志重定向，包括脚本，查看实时打印`tail -f /home/log/agent.log`
 2. 取消日志重定向，请修改*agent.env*中的`DEBUG="yes"`
 
 ## 架构
