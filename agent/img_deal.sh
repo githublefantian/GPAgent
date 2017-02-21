@@ -16,11 +16,16 @@ currenttime=`date`
 timestamp=`date +%s`
 echo -e "[$0]====script start time:${currenttime} (${timestamp})===="
 
+# Fix up: 若命令行启动多个程序同时解析时，img_deal.sh会kill掉不相关的程序
+fileset=""
 
 function myexit(){
-    echo "[$0] stop all img_parse.sh program!"
-    echo "ps aux | grep "img_parse.sh" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -s TERM > /dev/null"
-    ps aux | grep "img_parse.sh" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -s TERM &> /dev/null
+    echo "[$0] stop all relevant img_parse.sh program!"
+    for filename in $fileset; do
+        basefn=`basename ${filename}`
+        echo "ps aux | grep \"img_parse.sh\" | grep \"${basefn%.*}\" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -s TERM &> /dev/null"
+        ps aux | grep "img_parse.sh" | grep "${basefn%.*}" | grep -v $$ | grep -v grep | gawk '{ print $2 }' | xargs kill -s TERM &> /dev/null
+    done
     echo "[$0] rm -rf ${TMPPCAP_DIR}/*$1*"
     rm -rf ${TMPPCAP_DIR}/*$1*
     currenttime=`date`
@@ -36,10 +41,9 @@ for file in ${PCAP_DIR}/*$1*.pcap; do
     [ $# -eq 2 -a "${file:0-9:4}" == "$2" ] && continue
     echo "[$0] ${AGENT_DIR}/img_parse.sh -f ${file} &"
     ${AGENT_DIR}/img_parse.sh -f ${file} &
+    fileset=${fileset}" $file"
 done
 wait
 
 myexit
-
-
 

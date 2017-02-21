@@ -234,7 +234,7 @@ echo "[$0] \"${filelist}\" costs $(( $finishtime - $begintime )) seconds in tota
 
 currenttime=`date`
 timestamp=`date +%s`
-echo "[$0]PID: $$, myexit!"
+echo "[$0]PID: $$, exit!"
 echo -e "[$0]====script stop time:${currenttime} (${timestamp})===="
 exit ${SUCCESS_OK}
 
