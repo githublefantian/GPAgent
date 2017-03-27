@@ -70,7 +70,7 @@ def img_filter(pcapfile):
                 seq_str = str(p['TCP'].seq + p['IP'].len - 40) # compute the ack sequence
                 if method != 'GET':
                     continue
-                if not path.startswith('/bidimg/get.ashx'):
+                if -1 == path.find('/bidimg/get.ashx'):
                     continue
                 img_req_count += 1
                 request_key = src_ip + ':' + src_port + ':' + seq_str
