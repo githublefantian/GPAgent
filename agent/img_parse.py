@@ -33,7 +33,7 @@ def fntime(fn):
 
     return wrapped
 
-# 返回(请求总数包括重传, 请求记录不包括重传，没有响应记录，响应错误记录)
+# 返回(请求总数包括重传, 请求记录不包括重传，没有响应记录，响应错误记录, 重复响应次数(针对响应OK))
 @fntime
 def img_filter(pcapfile):
     # 总请求数，包括重传
@@ -45,6 +45,8 @@ def img_filter(pcapfile):
     img_no_response = {}
     # 保存响应错误的请求/响应信息 {CODE1: {KEY1: LIST1, KEY2: LIST2}}
     img_err_response = {}
+    # 保存重复响应的次数（只针对响应OK的进行统计）
+    img_response_ok_repeat = 0
 
     # 保存已处理的有响应的请求 {KEY1: ""} 内容为空
     img_deal_response = {}
@@ -90,6 +92,7 @@ def img_filter(pcapfile):
                 response_key = dst_ip + ':' + dst_port + ':' + ack_no
 
                 if response_key in img_deal_response:
+                    img_response_ok_repeat += 1
                     continue
 
                 if response_key in img_no_response:
@@ -133,7 +136,7 @@ def img_filter(pcapfile):
     pkt.close()
     del img_deal_response
 
-    return img_req_count, img_request, img_no_response, img_err_response
+    return img_req_count, img_request, img_no_response, img_err_response, img_response_ok_repeat
 
 
 # 返回(总的响应错误数，响应200 OK错误数)
@@ -220,7 +223,7 @@ def p_img_err_reponse(fw, res_error_dict={}):
 
 
 def p_statistic_info(fw, img_filter_result):
-    (total, request_dict, no_response_dict, response_err_dict) = img_filter_result
+    (total, request_dict, no_response_dict, response_err_dict, res_ok_repeat) = img_filter_result
     (response_err, ok_error) = get_err_response_sum(response_err_dict)
     real = len(request_dict)
     response = real - len(no_response_dict)
@@ -234,9 +237,10 @@ def p_statistic_info(fw, img_filter_result):
              'IMAGE NO-RESPONSE TOTAL,%d\n'
              'IMAGE RESPONSE ERROR TOTAL,%d\n'
              'IMAGE RESPONSE CONTENT-TYPE-ERROR TOTAL,%d\n'
-             'IMAGE RESPONSE STATUS-CODE-ERROR TOTAL,%d\n' % (total, real, success, real - success, real - response,
-                                                              response_err, ok_error,
-                                                              response_err - ok_error))
+             'IMAGE RESPONSE STATUS-CODE-ERROR TOTAL,%d\n'
+             'IMAGE RESPONSE SUCCESS REPEAT TOTAL,%d\n'
+             % (total, real, success, real - success, real - response, response_err,
+                ok_error, response_err - ok_error, res_ok_repeat))
     return
 
 if __name__ == '__main__':
