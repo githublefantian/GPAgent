@@ -117,14 +117,21 @@ COMMENT
 
 
 function myexit(){
-  echo "stop all netsniff-ng"
-  #killall -s SIGINT netsniff-ng
-  pgrep netsniff-ng | xargs kill -s INT 2> /dev/null
-  currenttime=`date`
-  timestamp=`date +%s`
-  echo "PID: $$, Exit normal!"
-  echo -e "[$0]====[script stop time]:${currenttime} (${timestamp})===="
-  exit
+    echo "record ifconfig info"
+    echo "[`date +%Y%m%d_%H:%M`]===stop========" >> ${IFCONFIG_FILE}
+    for i in ${nics};do
+      ifconfig $i | grep -E "([RT]X)|(flags)" >> ${IFCONFIG_FILE}
+      startprocess $i
+    done
+
+    echo "stop all netsniff-ng"
+    #killall -s SIGINT netsniff-ng
+    pgrep netsniff-ng | xargs kill -s INT 2> /dev/null
+    currenttime=`date`
+    timestamp=`date +%s`
+    echo "PID: $$, Exit normal!"
+    echo -e "[$0]====[script stop time]:${currenttime} (${timestamp})===="
+    exit
 }
 
 
@@ -160,10 +167,14 @@ do
 done
 
 
-#1. 启动抓包(所有网卡)
+#1. 启动抓包(所有网卡), 并记录抓包网卡信息
 date
 date +%s
+
+echo -e "\n" >> ${IFCONFIG_FILE}
+echo "[`date +%Y%m%d_%H:%M`]===start========" >> ${IFCONFIG_FILE}
 for i in ${nics};do
+  ifconfig $i | grep -E "([RT]X)|(flags)" >> ${IFCONFIG_FILE}
   startprocess $i
 done
 
