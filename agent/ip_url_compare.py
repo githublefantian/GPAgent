@@ -45,6 +45,9 @@ def pcapfile_parse(pcapfile):
                 if -1 == path.find('/bidimg/get.ashx'):
                     continue
                 request_key = src_ip + g_separator + path
+                if request_key in img_request_dict:
+                    img_request_dict[request_key] += 1
+                    continue
                 img_request_dict[request_key] = 1
                 g_img_request_dict[request_key] = 1
             except Exception as e:
@@ -83,18 +86,31 @@ if __name__ == '__main__':
         if data not in img_dict_out:
             only_in_have[data] = 1
             continue
+        g_img_request_dict[data] = only_in_have[data] - only_out_have[data]
+
 
     # 打印输出结果
     result_file = g_result_dir + os.path.basename(sys.argv[1]).replace('.pcap', '_ipurl.csv')
     print('writing to %s start' % result_file)
     with open(result_file, 'w') as fw:
+        fw.write('Requests in intranet, %d\n' % len(img_dict_in))
         fw.write('Requests only in intranet, %d\n' % len(only_in_have))
         for data in only_in_have:
             info = data.split(g_separator)
             fw.write(',,%s, %s\n' % (info[0], info[1]))
 
-        fw.write('Requests only in extranet: %d' % len(only_out_have))
+        fw.write('Requests in extranet, %d\n' % len(img_dict_out))
+        fw.write('Requests only in extranet: %d\n' % len(only_out_have))
         for data in only_out_have:
             info = data.split(g_separator)
             fw.write(',,%s, %s\n' % (info[0], info[1]))
+
+        count = 0
+        fw.write('Requests Diff (intranet - extranet)\n')
+        for data in g_img_request_dict:
+            if g_img_request_dict[data] != 0:
+                count += 1
+                info = data.split(g_separator)
+                fw.write(',%s, %s, %d\n' % (info[0], info[1], g_img_request_dict[data]))
+        fw.write('\n, %d' % count)
     print('writing to %s end' % result_file)
