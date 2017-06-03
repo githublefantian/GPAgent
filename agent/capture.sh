@@ -121,7 +121,11 @@ function myexit(){
     echo "[`date +%Y%m%d_%H:%M`]===stop========" >> ${IFCONFIG_FILE}
     for i in ${nics};do
       ifconfig $i | grep -E "([RT]X)|(flags)" >> ${IFCONFIG_FILE}
+<<<<<<< HEAD
       #startprocess $i
+=======
+      # startprocess $i
+>>>>>>> 2f0143ac0068beb28f7109d3d25f8e8276c36a0f
     done
 
     echo "stop all netsniff-ng"
