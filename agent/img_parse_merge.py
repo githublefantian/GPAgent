@@ -106,6 +106,9 @@ if __name__ == "__main__":
         img_parse.p_img_no_reponse(fw, result[2])
         fw.write('\n\n')
         img_parse.p_img_err_reponse(fw, result[3])
+        # 输出HTTP重复GET头信息
+        fw.write('\n\n')
+        img_parse.p_img_request_multi_get(fw, result[1], result[5])
         log.info('writing to %s end' % result_file)
 
     # 输出content-type错误的IMG请求路径

@@ -33,7 +33,9 @@ def fntime(fn):
 
     return wrapped
 
-# 返回(请求总数包括重传, 请求记录不包括重传，没有响应记录，响应错误记录, 重复响应次数(针对响应OK))
+# 返回(请求总数包括重传数, 请求记录不包括重传dict，没有响应记录dict，响应错误记录dict, 重复响应次数(针对响应OK))
+# (img_req_count, img_request, img_no_response, img_err_response, img_response_ok_repeat, img_request_multi_get)
+# (total, request_dict, no_response_dict, response_err_dict, res_ok_repeat)
 @fntime
 def img_filter(pcapfile):
     # 总请求数，包括重传
@@ -51,13 +53,15 @@ def img_filter(pcapfile):
     # 保存已处理的有响应的请求 {KEY1: ""} 内容为空
     img_deal_response = {}
 
+    # 保存请求你头中含Raw Data的信息, value为多余的GET次数
+    img_request_multi_get = {}
+
     pkt = scapy.PcapReader(pcapfile)
     while True:
         p = pkt.read_packet()
         if p is None:
             break
         #epoch_time = p.time
-
         #p.show()
         if p.getlayer('HTTP Request'):
             reqdata = p['HTTP Request']
@@ -80,6 +84,12 @@ def img_filter(pcapfile):
                     continue
                 img_no_response[request_key] = [p.time, src_ip, src_port, version, path]
                 img_request[request_key] = [p.time, src_ip, src_port, dst_ip, dst_port, NO_NO_RESPONSE, 0]
+                # 统计单个数据包中多个http请求头的情况
+                if p.getlayer('Raw'):
+                    get_count = str(p['Raw']).count('/bidimg/get.ashx')
+                    img_request_multi_get[request_key] = get_count
+
+
             except Exception as e:
                 print(e)
                 continue
@@ -136,7 +146,7 @@ def img_filter(pcapfile):
     pkt.close()
     del img_deal_response
 
-    return img_req_count, img_request, img_no_response, img_err_response, img_response_ok_repeat
+    return img_req_count, img_request, img_no_response, img_err_response, img_response_ok_repeat, img_request_multi_get
 
 
 # 返回(总的响应错误数，响应200 OK错误数)
@@ -158,6 +168,27 @@ def p_img_request(fw, img_request={}):
     for item in req_list:
         fw.write('%f,%s,%s,%s,%s,%d,%f\n' % tuple(item[1]))
     return
+
+'''
+# 验证码响应类型分类
+NO_NO_RESPONSE = 0          # 没有响应
+NO_NORMAL_RESPONSE = 1      # 正常响应
+NO_CODE_ERROR_RESPONSE = 2  # 状态码返回错误
+NO_CT_ERROR_RESPONSE = 3    # content-type 类型错误(状态码200)
+'''
+def p_img_request_multi_get(fw, img_request={}, img_request_multi_get={}):
+    total = 0
+    for key in img_request_multi_get:
+        total += img_request_multi_get[key]
+    fw.write('HTTP-MULTI-GET PACKETS,%d\n' % (len(img_request_multi_get)))
+    fw.write('HTTP-MULTI-GET EXTRA-TOTAL,%d\n\n' % total)
+
+    fw.write(',,REQUEST_TIME,SRC_IP,SRC_PORT,DST_IP,DST_PORT,RESPONSE_VERSION(NO-RES:0;NORMAL1;CODE-ERR:2;CT-ERR:3),DELTA-TIME,HTTP-GET-EXTRA-TOTAL\n')
+    for key in img_request_multi_get:
+        fw.write(',,%f,%s,%s,%s,%s,%d,%f' % tuple(img_request[key]))
+        fw.write(',%d\n' % img_request_multi_get[key])
+    return
+
 
 def p_img_no_reponse(fw, no_response_dict={}):
     fw.write('NO-RESPONSE PACKETS,%d\n\n' % (len(no_response_dict)))
@@ -223,7 +254,7 @@ def p_img_err_reponse(fw, res_error_dict={}):
 
 
 def p_statistic_info(fw, img_filter_result):
-    (total, request_dict, no_response_dict, response_err_dict, res_ok_repeat) = img_filter_result
+    (total, request_dict, no_response_dict, response_err_dict, res_ok_repeat, request_multi_get_dict) = img_filter_result
     (response_err, ok_error) = get_err_response_sum(response_err_dict)
     real = len(request_dict)
     response = real - len(no_response_dict)
@@ -239,8 +270,9 @@ def p_statistic_info(fw, img_filter_result):
              'IMAGE RESPONSE CONTENT-TYPE-ERROR TOTAL,%d\n'
              'IMAGE RESPONSE STATUS-CODE-ERROR TOTAL,%d\n'
              'IMAGE RESPONSE SUCCESS REPEAT TOTAL,%d\n'
+             'IMAGE REQUEST HAS-RAW-DATA(MULTI-GET) TOTAL,%d\n'
              % (total, real, success, real - success, real - response, response_err,
-                ok_error, response_err - ok_error, res_ok_repeat))
+                ok_error, response_err - ok_error, res_ok_repeat, len(request_multi_get_dict)))
     return
 
 if __name__ == '__main__':
@@ -281,6 +313,9 @@ if __name__ == '__main__':
         p_img_no_reponse(fw, result[2])
         fw.write('\n\n')
         p_img_err_reponse(fw, result[3])
+        # 输出HTTP重复GET头信息
+        fw.write('\n\n')
+        p_img_request_multi_get(fw, result[1], result[5])
     log.info('writing to %s end' % result_file)
 
     # 输出content-type错误的IMG请求路径
@@ -298,3 +333,4 @@ if __name__ == '__main__':
         p_img_request(fw, result[1])
     log.info('writing to %s end' % request_file)
     '''
+
