@@ -53,7 +53,7 @@ def img_filter(pcapfile):
     # 保存已处理的有响应的请求 {KEY1: ""} 内容为空
     img_deal_response = {}
 
-    # 保存请求你头中含Raw Data的信息, value为多余的GET次数
+    # 保存请求你头中含Raw Data的信息, [多余的GET次数, RAWDATA]
     img_request_multi_get = {}
 
     pkt = scapy.PcapReader(pcapfile)
@@ -87,7 +87,7 @@ def img_filter(pcapfile):
                 # 统计单个数据包中多个http请求头的情况
                 if p.getlayer('Raw'):
                     get_count = str(p['Raw']).count('/bidimg/get.ashx')
-                    img_request_multi_get[request_key] = get_count
+                    img_request_multi_get[request_key] = [get_count, str(p['Raw'])]
 
 
             except Exception as e:
@@ -179,14 +179,14 @@ NO_CT_ERROR_RESPONSE = 3    # content-type 类型错误(状态码200)
 def p_img_request_multi_get(fw, img_request={}, img_request_multi_get={}):
     total = 0
     for key in img_request_multi_get:
-        total += img_request_multi_get[key]
+        total += img_request_multi_get[key][0]
     fw.write('HTTP-MULTI-GET PACKETS,%d\n' % (len(img_request_multi_get)))
     fw.write('HTTP-MULTI-GET EXTRA-TOTAL,%d\n\n' % total)
 
-    fw.write(',,REQUEST_TIME,SRC_IP,SRC_PORT,DST_IP,DST_PORT,RESPONSE_VERSION(NO-RES:0;NORMAL1;CODE-ERR:2;CT-ERR:3),DELTA-TIME,HTTP-GET-EXTRA-TOTAL\n')
+    fw.write(',,REQUEST_TIME,SRC_IP,SRC_PORT,DST_IP,DST_PORT,RESPONSE_VERSION(NO-RES:0;NORMAL1;CODE-ERR:2;CT-ERR:3),DELTA-TIME,HTTP-GET-EXTRA-TOTAL, RAW-DATA\n')
     for key in img_request_multi_get:
         fw.write(',,%f,%s,%s,%s,%s,%d,%f' % tuple(img_request[key]))
-        fw.write(',%d\n' % img_request_multi_get[key])
+        fw.write(',%d,%s\n' % (img_request_multi_get[key][0], img_request_multi_get[key][1].replace('\r\n', ';')))
     return
 
 
