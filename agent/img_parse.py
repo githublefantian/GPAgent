@@ -73,7 +73,14 @@ def img_filter(pcapfile):
                 method = reqdata.getfieldval('Method')
                 version = reqdata.getfieldval('Http-Version')
                 path = reqdata.getfieldval('Path')
-                seq_str = str(p['TCP'].seq + p['IP'].len - 40) # compute the ack sequence
+
+                # print("\n==========flags:%d====data len:%d=====\n" % (flags, p['IP'].ihl*4 + p['TCP'].dataofs*4))
+                flags = p['TCP'].flags  # an integer
+                if (flags & 0x01) or (flags & 0x02):  # FIN or SYN flag activated
+                    seq_str = str(p['TCP'].seq + (p['IP'].len - p['IP'].ihl * 4 - p['TCP'].dataofs * 4) + 1)  # compute the ack sequence
+                else:
+                    seq_str = str(p['TCP'].seq + (p['IP'].len - p['IP'].ihl * 4 - p['TCP'].dataofs * 4))  # compute the ack sequence
+
                 if method != 'GET':
                     continue
                 if -1 == path.find('/bidimg/get.ashx'):
