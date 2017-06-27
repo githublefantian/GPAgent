@@ -74,12 +74,15 @@ def img_filter(pcapfile):
                 version = reqdata.getfieldval('Http-Version')
                 path = reqdata.getfieldval('Path')
 
+                '''
                 # print("\n==========flags:%d====data len:%d=====\n" % (flags, p['IP'].ihl*4 + p['TCP'].dataofs*4))
                 flags = p['TCP'].flags  # an integer
                 if (flags & 0x01) or (flags & 0x02):  # FIN or SYN flag activated
                     seq_str = str(p['TCP'].seq + (p['IP'].len - p['IP'].ihl * 4 - p['TCP'].dataofs * 4) + 1)  # compute the ack sequence
                 else:
                     seq_str = str(p['TCP'].seq + (p['IP'].len - p['IP'].ihl * 4 - p['TCP'].dataofs * 4))  # compute the ack sequence
+                '''
+                seq_str = str(p['TCP'].seq + (p['IP'].len - p['IP'].ihl * 4 - p['TCP'].dataofs * 4))  # compute the ack sequence
 
                 if method != 'GET':
                     continue
@@ -105,11 +108,18 @@ def img_filter(pcapfile):
             try:
                 dst_ip = str(p['IP'].dst)
                 dst_port = str(p['TCP'].dport)
-                ack_no = str(p['TCP'].ack)
-                response_key = dst_ip + ':' + dst_port + ':' + ack_no
+                response_key_1 = dst_ip + ':' + dst_port + ':' + str(p['TCP'].ack)
+                response_key_2 = dst_ip + ':' + dst_port + ':' + str(p['TCP'].ack - 1)  # for SYN or FIN
 
-                if response_key in img_deal_response:
+                if (response_key_1 in img_deal_response) or (response_key_2 in img_deal_response):
                     img_response_ok_repeat += 1
+                    continue
+
+                if response_key_1 in img_no_response:
+                    response_key = response_key_1
+                elif response_key_2 in img_no_response:
+                    response_key = response_key_2
+                else:
                     continue
 
                 if response_key in img_no_response:
